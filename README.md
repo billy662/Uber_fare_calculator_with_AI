@@ -49,22 +49,3 @@ Build and run using Docker:
 docker build -t uber-receipt-analysis .
 docker run -p 8080:8080 uber-receipt-analysis
 ```
-
-Environment Variables
-GEMINI_API_KEY: Your Google Gemini API key
-PYTHONDONTWRITEBYTECODE: Set to 1 to prevent Python from writing .pyc files
-PYTHONUNBUFFERED: Set to 1 for unbuffered Python output
-
-├── app.py             # Flask application entry point
-├── backend.py         # Backend logic and AI processing
-├── Dockerfile         # Docker configuration
-├── requirements.txt   # Python dependencies
-├── resources/         # Upload directory for images
-└── templates/         # HTML templates
-    └── index.html    # Main application interface
-
-License
-This project is for demonstration purposes. Use responsibly and in accordance with Uber's terms of service.
-
-
-This README provides a comprehensive overview of your project, including its features, setup instructions, and structure. Feel free to modify or expand it based on your specific needs.This README provides a comprehensive overview of your project, including its features, setup instructions, and structure. Feel free to modify or expand it based on your specific needs.
