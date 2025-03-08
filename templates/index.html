@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uber 收據分析</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #5D5CDE;
+        }
+        body {
+            background-color: #181818;
+            color: #f8f9fa;
+            transition: background-color 0.3s ease;
+        }
+        .card {
+            background-color: #242424;
+            color: #f8f9fa;
+            border: 1px solid #333;
+        }
+        .table {
+            color: #f8f9fa;
+        }
+        .form-control {
+            background-color: #333;
+            color: #f8f9fa;
+            border-color: #444;
+        }
+        .upload-area {
+            border: 2px dashed #555;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: var(--primary-color);
+        }
+        .image-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .preview-item {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            overflow: hidden;
+            border-radius: 4px;
+        }
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .btn-primary:hover {
+            background-color: #4b4abf;
+            border-color: #4b4abf;
+        }
+        .result-table {
+            display: none;
+            margin-top: 2rem;
+        }
+        .table-striped>tbody>tr:nth-of-type(odd) {
+            background-color: #333;
+        }
+        .alert {
+            display: none;
+            margin-top: 1rem;
+        }
+        .table th, .table td {
+            border-color: #333;
+        }
+        .table thead th {
+            background-color: #333;
+            border-bottom: 2px solid #555;
+        }
+        .table-bordered {
+          border: 1px solid #333;
+        }
+        .waitingFeeInput {
+            width: 70px;
+        }
+        .bigPriceDifference{
+            color: red;
+            font-weight: bold;
+        }
+
+        #copyTableBtn {
+            background-color: #444;
+            border-color: #555;
+        }
+
+        #copyTableBtn:hover {
+            background-color: #555;
+            border-color: #666;
+        }
+
+        #copyTableBtn i {
+            margin-right: 5px;
+        }
+
+        .hide-calc-columns .calculatedPrice,
+        .hide-calc-columns .priceDifference,
+        .hide-calc-columns .calc-column {
+            display: none;
+        }
+
+        #toggleCalcColumns i {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">Uber 收據分析工具</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-danger" id="errorAlert" role="alert"></div>
+                        
+                        <div class="upload-area" id="uploadArea">
+                            <div>
+                                <i class="bi bi-cloud-arrow-up fs-1"></i>
+                                <p class="mb-0">點擊或拖放圖片到此處</p>
+                                <small class="text-muted">支持多圖上傳</small>
+                            </div>
+                            <input type="file" id="fileInput" multiple accept="image/*" class="d-none">
+                        </div>
+
+                        <div class="image-preview" id="imagePreview"></div>
+
+                        <div class="d-grid gap-2 mt-3">
+                            <button id="submitBtn" class="btn btn-primary" disabled>
+                                送出圖片進行分析
+                            </button>
+                        </div>
+
+                        <div class="loader" id="loader">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3">正在處理圖片，請稍候...</p>
+                        </div>
+
+                        <div class="result-table" id="resultTable">
+                            <button id="copyTableBtn" class="btn btn-secondary btn-sm">
+                                <i class="bi bi-clipboard"></i> Copy Table Data
+                            </button>
+                            <button id="toggleCalcColumns" class="btn btn-secondary btn-sm">
+                                <i class="bi bi-eye"></i> Toggle Calculation Columns
+                            </button>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-dark table-bordered rounded" style="border-collapse: separate;border: solid #616161 1px;">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>時間</th>
+                                            <th>時長</th>
+                                            <th>距離</th>
+                                            <th>加乘$</th>
+                                            <th>等候費</th>
+                                            <th>行程收入</th>
+                                            <th class="calc-column">應得收入</th>
+                                            <th class="calc-column">差額</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="resultBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-3 text-end" id="resultFooter">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // 檢測深色模式
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+
+        // 處理圖片上傳
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const imagePreview = document.getElementById('imagePreview');
+            const submitBtn = document.getElementById('submitBtn');
+            const loader = document.getElementById('loader');
+            const resultTable = document.getElementById('resultTable');
+            const resultBody = document.getElementById('resultBody');
+            const resultFooter = document.getElementById('resultFooter');
+            const errorAlert = document.getElementById('errorAlert');
+            const toggleCalcColumns = document.getElementById('toggleCalcColumns');
+            
+            
+            let selectedFiles = [];
+
+            // 點擊上傳區域觸發文件輸入
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            // 拖放功能
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            uploadArea.addEventListener('dragenter', () => {
+                uploadArea.style.borderColor = 'var(--primary-color)';
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = '';
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                uploadArea.style.borderColor = '';
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            });
+
+            // 文件選擇變更處理
+            fileInput.addEventListener('change', function() {
+                handleFiles(this.files);
+            });
+
+            // 處理選擇的文件
+            function handleFiles(files) {
+                if (files.length === 0) return;
+                
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    if (!file.type.match('image.*')) continue;
+                    
+                    selectedFiles.push(file);
+                    addImagePreview(file, selectedFiles.length - 1);
+                }
+                
+                updateSubmitButton();
+            }
+
+            // 添加圖片預覽
+            function addImagePreview(file, index) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const div = document.createElement('div');
+                    div.className = 'preview-item';
+                    div.dataset.index = index;
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'remove-btn';
+                    removeBtn.innerHTML = '×';
+                    removeBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        removeImage(index);
+                    });
+                    
+                    div.appendChild(img);
+                    div.appendChild(removeBtn);
+                    imagePreview.appendChild(div);
+                };
+                
+                reader.readAsDataURL(file);
+            }
+
+            // 移除圖片
+            function removeImage(index) {
+                selectedFiles[index] = null;
+                const item = imagePreview.querySelector(`[data-index="${index}"]`);
+                if (item) {
+                    item.remove();
+                }
+                updateSubmitButton();
+            }
+
+            // 更新提交按鈕狀態
+            function updateSubmitButton() {
+                const validFiles = selectedFiles.filter(file => file !== null);
+                submitBtn.disabled = validFiles.length === 0;
+            }
+
+            // Submit button event listener - send to Flask backend
+            submitBtn.addEventListener('click', async function() {
+                const validFiles = selectedFiles.filter(file => file !== null);
+                if (validFiles.length === 0) return;
+                
+                // Hide any previous errors
+                errorAlert.style.display = 'none';
+                
+                // Show loading animation
+                loader.style.display = 'block';
+                resultTable.style.display = 'none';
+                submitBtn.disabled = true;
+                
+                try {
+                    const formData = new FormData();
+                    validFiles.forEach((file) => {
+                        formData.append('images', file);
+                    });
+                    
+                    // Send files to Flask backend
+                    const response = await fetch('/api/process-images', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Upload failed');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    
+                    displayResults(data);
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    errorAlert.textContent = error.message || 'An error occurred during processing';
+                    errorAlert.style.display = 'block';
+                    loader.style.display = 'none';
+                } finally {
+                    submitBtn.disabled = false;
+                }
+            });
+
+            // 顯示結果
+            function displayResults(data) {
+                resultBody.innerHTML = '';
+
+                var count = 0; //number of rows
+                var sumPrice = 0; //sum of price
+                var sumDifference = 0; //sum of difference
+                
+                data.forEach(item => {
+                    count++;
+
+                    const row = document.createElement('tr');
+
+                    var duration = item['Duration (minutes)'];
+                    var distance = item['Distance (km)'];
+                    var surge = item['Surge (HK$)'];
+                    var price = item['Price (HK$)'];
+                    sumPrice += price;
+
+                    var calculatedPrice = calculatePrice(duration, distance, surge);
+                    var difference = (price - calculatedPrice).toFixed(2);
+                    if(item['Type of ride'].startsWith('咪錶的士')){
+                        calculatedPrice = price;
+                        difference = 0;
+                    }
+                    sumDifference += parseFloat(difference);
+
+                    row.innerHTML = `
+                        <td>${item['Time of the ride']}</td>
+                        <td>${item['Duration (minutes)']}</td>
+                        <td>${item['Distance (km)']}</td>
+                        <td>${item['Surge (HK$)'] || ''}</td>
+                        <td>${item['Waiting Fee?'] === 'X' ? `<input type="number" class="waitingFeeInput" step="0.01" min="0" max="100"/>` : item['Waiting Fee?'] || ''}</td>
+                        <td>${item['Price (HK$)']}</td>
+                        <td class="calculatedPrice">${calculatedPrice}</td>
+                        <td class="priceDifference ${parseFloat(difference) <= -5 ? 'bigPriceDifference' : ''}">${difference}</td>
+                    `;
+                    
+                    resultBody.appendChild(row);
+
+                    // Add event listener for waiting fee input if it exists
+                    const waitingFeeInput = row.querySelector('.waitingFeeInput');
+                    if (waitingFeeInput) {
+                        waitingFeeInput.setAttribute('pattern', '^\d*\.?\d{0,2}$');
+
+                        waitingFeeInput.addEventListener('input', function(e) {
+                            // Remove any non-numeric characters except decimal point
+                            let value = this.value.replace(/[^\d.]/g, '');
+                            
+                            // Ensure only one decimal point
+                            const decimalPoints = value.match(/\./g);
+                            if (decimalPoints && decimalPoints.length > 1) {
+                                value = value.replace(/\.+$/, '');
+                            }
+
+                            // Handle decimal places
+                            if (value.includes('.')) {
+                                const [whole, decimal] = value.split('.');
+                                value = whole + '.' + (decimal || '').slice(0, 2);
+                            }
+
+                            // Check if value is within 0-100 range
+                            let numValue = parseFloat(value);
+                            if (numValue > 100) {
+                                value = '100';
+                                numValue = 100;
+                            }
+
+                            // Update input value if it changed
+                            if (this.value !== value) {
+                                this.value = value;
+                            }
+
+                            // Only proceed with calculation if we have a valid number
+                            if (!isNaN(numValue)) {
+                                const waitingFee = parseFloat(this.value) || 0;
+                                const newCalculatedPrice = calculatePrice(duration, distance, surge, waitingFee);
+                                const calculatedPriceCell = row.querySelector('.calculatedPrice');
+                                const differenceCell = row.querySelector('.priceDifference');
+                                
+                                calculatedPriceCell.textContent = newCalculatedPrice;
+                                const newDifference = (price - newCalculatedPrice).toFixed(2);
+                                differenceCell.textContent = newDifference;
+
+                                // Recalculate total difference
+                                let totalDifference = 0;
+                                document.querySelectorAll('.priceDifference').forEach(cell => {
+                                    totalDifference += parseFloat(cell.textContent || 0);
+                                });
+
+                                // Update summary footer
+                                resultFooter.innerHTML = `
+                                    <p class="mb-1">總筆數: ${count} 筆</p>
+                                    <p class="mb-0">總金額: HK$ ${sumPrice.toFixed(2)}</p>
+                                    <p class="mb-0">總差額: HK$ ${totalDifference.toFixed(2)}</p>
+                                `;
+                            }
+                        });
+                    }
+                });
+                
+                // Initial summary row
+                resultFooter.innerHTML = `
+                    <p class="mb-1">總筆數: ${count} 筆</p>
+                    <p class="mb-0">總金額: HK$ ${sumPrice.toFixed(2)}</p>
+                    <p class="mb-0">總差額: HK$ ${sumDifference.toFixed(2)}</p>
+                `;
+
+                loader.style.display = 'none';
+                resultTable.style.display = 'block';
+            }
+
+            function calculatePrice(duration, distance, surge, waitingFee = 0) {
+                var minCharge = 40.95;
+                var baseFare = 15.5;
+                var perMinPrice = 2.1;
+                var perKmPrice = 5.59
+                var commission = 0.9;
+
+                if (distance > 5 && distance <= 10) {
+                    perKmPrice = 6.79;
+                } else if (distance > 10 && distance <= 15) {
+                    perKmPrice = 6.64;
+                } else if (distance > 15) {
+                    perKmPrice = 5.39;
+                }
+
+                surge = typeof surge === 'string' ? parseFloat(surge) : surge;
+
+                var price = (baseFare + duration * perMinPrice + (distance * perKmPrice) + (surge || 0) + waitingFee) * commission;
+                if (price < minCharge) {
+                    price = minCharge * commission;
+                }
+                return price.toFixed(2);
+            }
+
+            // Copy table data to clipboard
+            const copyTableBtn = document.getElementById('copyTableBtn');
+
+            copyTableBtn.addEventListener('click', function() {
+                const rows = document.querySelectorAll('#resultBody tr');
+                let copyText = '';
+                
+                rows.forEach(row => {
+                    const cells = Array.from(row.querySelectorAll('td'));
+                    const rowData = cells
+                        .filter(cell => {
+                            // Check if the cell is visible (not display: none)
+                            const style = window.getComputedStyle(cell);
+                            return style.display !== 'none';
+                        })
+                        .map(cell => {
+                            // If there's an input field, get its value
+                            const input = cell.querySelector('input');
+                            if (input) {
+                                return input.value || '';
+                            }
+                            // Otherwise get the cell's text content
+                            return cell.textContent.trim();
+                        });
+                    
+                    copyText += rowData.join('\t') + '\n';
+                });
+                
+                navigator.clipboard.writeText(copyText).then(() => {
+                    // Temporarily change button text to show success
+                    const originalText = copyTableBtn.innerHTML;
+                    copyTableBtn.innerHTML = '<i class="bi bi-check"></i> Copied!';
+                    setTimeout(() => {
+                        copyTableBtn.innerHTML = originalText;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy text:', err);
+                    alert('Failed to copy table data');
+                });
+            });
+
+            // Toggle calculation columns
+            toggleCalcColumns.addEventListener('click', function() {
+                const table = document.querySelector('.table');
+                table.classList.toggle('hide-calc-columns');
+                
+                // Update button icon and text
+                const icon = toggleCalcColumns.querySelector('i');
+                if (table.classList.contains('hide-calc-columns')) {
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                    toggleCalcColumns.innerHTML = '<i class="bi bi-eye-slash"></i> Show Calculations';
+                } else {
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                    toggleCalcColumns.innerHTML = '<i class="bi bi-eye"></i> Hide Calculations';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
