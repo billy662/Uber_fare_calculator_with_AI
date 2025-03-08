@@ -36,9 +36,19 @@ GEMINI_API_KEY=your_api_key_here
 3. Install dependencies:
 ```sh
 pip install -r requirements.txt
+```
 
 4. Run the application:
+```sh
 python app.py
+```
+
+Docker Deployment
+Build and run using Docker:
+```sh
+docker build -t uber-receipt-analysis .
+docker run -p 8080:8080 uber-receipt-analysis
+```
 
 Environment Variables
 GEMINI_API_KEY: Your Google Gemini API key
