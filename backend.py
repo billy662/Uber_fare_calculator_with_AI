@@ -101,9 +101,9 @@ The JSON should include the following columns and sort by time, from earliest to
 *Waiting Fee?:  If, within the ride details, there is a visual indicator consisting of a small, green colored box containing an upward pointing arrow icon, and the text "已增加" displayed alongside or within that box, then output "X". Otherwise, leave the output blank. 
 *Tip: If within the ride details, there is a text "貼士", the amount next to it represents the tip. If the trip includes tip, output the amount of the tip, otherwise leave the output blank.
 *Price (HK$): 
-*Type of ride: Usually "的士(預定價錢)", "咪錶的士" or "咪錶的士(乘客八五折)"
+*Type of ride: Usually "的士(預定價錢)", "咪錶的士" , "咪錶的士(乘客八五折)", "UberX", "Uber Pet", "Comfort", "UberXL", "UberXXL" or "Black"
 *Airport trip?: You need to identify trips that are starting or ending in Chek Lap Kok(赤鱲角). In the little maps show in the images, the green circle represents the trip starting point and the red circle represents ending point. You can also look for hints below the mini map, the first address represents the trip starting point and the second address represents the trip ending point. Output "normal" for non Chek Lap Kok related trips, "fromAirport" for trips staring from Chek Lap Kok, "toAirport" for trips ending in Chek Lap Kok. Please make sure this output is super accurate.
-Please ensure the JSON accurately reflects the information in the screenshot. Show the JSON only..
+Please ensure the JSON accurately reflects the information in the screenshot. Show the JSON only.
 """
     
     try:

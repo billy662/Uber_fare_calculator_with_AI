@@ -493,19 +493,21 @@
                 data.forEach(item => {
                     count++;
 
-                    const row = document.createElement('tr');
-
                     var duration = item['Duration (minutes)'];
                     var distance = item['Distance (km)'];
                     var surge = item['Surge (HK$)'];
                     var tip = item['Tip'];
                     var price = item['Price (HK$)'];
                     var airportTrip = item['Airport trip?'];
+                    var rideType = item['Type of ride'];
+
+                    const row = document.createElement('tr');
+
                     sumPrice += price;
 
-                    var calculatedPrice = calculatePrice(duration, distance, surge, 0 ,tip, airportTrip);
+                    var calculatedPrice = calculatePrice(duration, distance, surge, 0 ,tip, airportTrip, rideType);
                     var difference = (price - calculatedPrice).toFixed(2);
-                    if(item['Type of ride'].startsWith('咪錶的士')){
+                    if(rideType.startsWith('咪錶的士')){
                         calculatedPrice = price;
                         difference = 0;
                     }
@@ -527,6 +529,8 @@
                             </button>
                         </td>
                     `;
+
+                    row.cells[0].dataset.rideType = rideType;
                     
                     resultBody.appendChild(row);
 
@@ -566,7 +570,7 @@
                             // Only proceed with calculation if we have a valid number
                             if (!isNaN(numValue) || this.value === '') {
                                 const waitingFee = this.value === '' ? 0 : parseFloat(this.value);
-                                const newCalculatedPrice = calculatePrice(duration, distance, surge, waitingFee, tip, airportTrip);
+                                const newCalculatedPrice = calculatePrice(duration, distance, surge, waitingFee, tip, airportTrip, row.cells[0].dataset.rideType);
                                 const calculatedPriceCell = row.querySelector('.calculatedPrice');
                                 const differenceCell = row.querySelector('.priceDifference');
                                 
@@ -605,50 +609,154 @@
 
             // Define fare configurations for different ride types
             const fareConfigs = {
-                'normal': {
-                    minCharge: 40.95,
-                    baseFare: 15.5,
-                    perMinPrice: 2.1,
-                    perKmRates: [
-                        { maxKm: 5, rate: 5.59 },
-                        { maxKm: 10, rate: 6.79 },
-                        { maxKm: 15, rate: 6.64 },
-                        { maxKm: Infinity, rate: 5.39 }
-                    ]
+                'taxi': {
+                    'normal': {
+                        minCharge: 40.95,
+                        baseFare: 15.5,
+                        perMinPrice: 2.1,
+                        perKmRates: [
+                            { maxKm: 5, rate: 5.59 },
+                            { maxKm: 10, rate: 6.79 },
+                            { maxKm: 15, rate: 6.64 },
+                            { maxKm: Infinity, rate: 5.39 }
+                        ]
+                    },
+                    'fromAirport': {
+                        minCharge: 42.95,
+                        baseFare: 15.5,
+                        perMinPrice: 2.1,
+                        perKmRates: [
+                            { maxKm: 5, rate: 5.87 },
+                            { maxKm: 10, rate: 7.13 },
+                            { maxKm: 15, rate: 6.64 },
+                            { maxKm: Infinity, rate: 5.39 }
+                        ]
+                    },
+                    'toAirport': {
+                        minCharge: 40.95,
+                        baseFare: 15.5,
+                        perMinPrice: 2.1,
+                        perKmRates: [
+                            { maxKm: 5, rate: 5.59 },
+                            { maxKm: 10, rate: 6.79 },
+                            { maxKm: 15, rate: 6.31 },
+                            { maxKm: Infinity, rate: 5.12 }
+                        ]
+                    }
                 },
-                'fromAirport': {
-                    minCharge: 42.95,
-                    baseFare: 15.5,
-                    perMinPrice: 2.1,
-                    perKmRates: [
-                        { maxKm: 5, rate: 5.87 },
-                        { maxKm: 10, rate: 7.13 },
-                        { maxKm: 15, rate: 6.64 },
-                        { maxKm: Infinity, rate: 5.39 }
-                    ]
+                'uberx': {
+                    'normal': {
+                        minCharge: 40.95,
+                        baseFare: 18,
+                        perMinPrice: 2.04,
+                        perKmRates: [
+                            { maxKm: 5, rate: 4.73 },
+                            { maxKm: 10, rate: 5.23 },
+                            { maxKm: 15, rate: 5.63 },
+                            { maxKm: Infinity, rate: 4.88 }
+                        ]
+                    },
+                    'fromAirport': {
+                        minCharge: 42.95,
+                        baseFare: 18,
+                        perMinPrice: 2.04,
+                        perKmRates: [
+                            { maxKm: 5, rate: 4.97 },
+                            { maxKm: 10, rate: 5.49 },
+                            { maxKm: 15, rate: 5.63 },
+                            { maxKm: Infinity, rate: 4.88 }
+                        ]
+                    },
+                    'toAirport': {
+                        minCharge: 40.95,
+                        baseFare: 18,
+                        perMinPrice: 2.04,
+                        perKmRates: [
+                            { maxKm: 5, rate: 4.73 },
+                            { maxKm: 10, rate: 5.23 },
+                            { maxKm: 15, rate: 5.35 },
+                            { maxKm: Infinity, rate: 4.64 }
+                        ]
+                    }
                 },
-                'toAirport': {
-                    minCharge: 40.95,
-                    baseFare: 15.5,
-                    perMinPrice: 2.1,
-                    perKmRates: [
-                        { maxKm: 5, rate: 5.59 },
-                        { maxKm: 10, rate: 6.79 },
-                        { maxKm: 15, rate: 6.31 },
-                        { maxKm: Infinity, rate: 5.12 }
-                    ]
+                'comfort': {
+                    'normal': {
+                        minCharge: 56,
+                        baseFare: 26.85,
+                        perMinPrice: 1.6,
+                        perKmPrice: 6.29
+                    }
+                },
+                'uberxl': {
+                    'normal': {
+                        minCharge: 75,
+                        baseFare: 40,
+                        perMinPrice: 1.9,
+                        perKmPrice: 8.68
+                    }
+                },
+                'uberxxl': {
+                    'normal': {
+                        minCharge: 80,
+                        baseFare: 45,
+                        perMinPrice: 1.9,
+                        perKmPrice: 9.22
+                    }
+                },
+                'black': {
+                    'normal': {
+                        minCharge: 90,
+                        baseFare: 45,
+                        perMinPrice: 1.9,
+                        perKmPrice: 9.22
+                    }
                 }
             };
-            var commission = 0.9;
+
 
             // Function to get per km rate based on distance
             function getPerKmRate(distance, rateConfig) {
+                if (rateConfig.perKmPrice !== undefined) {
+                    return rateConfig.perKmPrice;
+                }
+                // Otherwise, use the variable rate system
                 return rateConfig.perKmRates.find(rate => distance <= rate.maxKm).rate;
             }
 
-            function calculatePrice(duration, distance, surge, waitingFee = 0, tip, airportTrip) {
-                console.log(airportTrip);
-                const config = fareConfigs[airportTrip];
+            function calculatePrice(duration, distance, surge, waitingFee = 0, tip, airportTrip, rideType) {
+                let serviceType = 'taxi'; // default to taxi
+                var commission = 0.9;
+                let petFee = 0;
+    
+                // Determine service type and commission based on ride type
+                if (rideType) {
+                    const rideTypeLower = rideType.toLowerCase();
+                    if (rideTypeLower.includes('uber pet')) {
+                        serviceType = 'uberx';
+                        commission = 0.73;
+                        petFee = 20; // Add $20 for Uber Pet rides
+                    }
+                    if (rideTypeLower.includes('uberx')) {
+                        serviceType = 'uberx';
+                        commission = 0.73;
+                    } else if (rideTypeLower.includes('comfort')) {
+                        serviceType = 'comfort';
+                        commission = 0.7;
+                    } else if (rideTypeLower.includes('uberxl')) {
+                        serviceType = 'uberxl';
+                        commission = 0.7;
+                    } else if (rideTypeLower.includes('uberxxl')) {
+                        serviceType = 'uberxxl';
+                        commission = 0.7;
+                    } else if (rideTypeLower.includes('black')) {
+                        serviceType = 'black';
+                        commission = 0.7;
+                    }
+                }
+
+                // For fixed-rate services, always use 'normal' config regardless of airport status
+                const useAirportTrip = ['taxi', 'uberx'].includes(serviceType) ? airportTrip : 'normal';
+                const config = fareConfigs[serviceType][useAirportTrip];
                 const perKmPrice = getPerKmRate(distance, config);
 
                 surge = typeof surge === 'string' ? parseFloat(surge) : surge;
@@ -658,7 +766,8 @@
                     duration * config.perMinPrice + 
                     (distance * perKmPrice) + 
                     (surge || 0) + 
-                    waitingFee) * commission +
+                    waitingFee +
+                    petFee) * commission +
                     (tip || 0);
                 
                  if (price < config.minCharge) {
@@ -750,7 +859,7 @@
                 updateAirportType('normal', '');
             });
 
-            function updateAirportType(type, label) {
+            function updateAirportType(airportType, label) {
                 if (currentRow) {
                     const duration = parseFloat(currentRow.cells[1].textContent);
                     const distance = parseFloat(currentRow.cells[2].textContent);
@@ -759,14 +868,15 @@
                     const waitingFee = waitingFeeInput ? parseFloat(waitingFeeInput.value) || 0 : 0;
                     const tip = parseFloat(currentRow.cells[5].textContent) || 0;
                     const price = parseFloat(currentRow.cells[6].textContent);
+                    const rideType = currentRow.cells[0].dataset.rideType;
 
                     const airportBtn = currentRow.querySelector('.airport-btn');
-                    airportBtn.dataset.type = type;
+                    airportBtn.dataset.type = airportType;
                     airportBtn.classList.remove('btn-outline-secondary', 'btn-primary', 'btn-info');
                     
-                    if (type === 'normal') {
+                    if (airportType === 'normal') {
                         airportBtn.classList.add('btn-outline-secondary');
-                    } else if (type === 'toAirport') {
+                    } else if (airportType === 'toAirport') {
                         airportBtn.classList.add('btn-primary');
                         airportBtn.querySelector('i').classList.remove('bi-airplane');
                         airportBtn.querySelector('i').classList.add('bi-airplane-fill');
@@ -776,7 +886,7 @@
                         airportBtn.querySelector('i').classList.add('bi-airplane');
                     }
 
-                    const newCalculatedPrice = calculatePrice(duration, distance, surge, waitingFee, tip, type);
+                    const newCalculatedPrice = calculatePrice(duration, distance, surge, waitingFee, tip, airportType, rideType);
                     currentRow.querySelector('.calculatedPrice').textContent = newCalculatedPrice;
                     
                     const newDifference = (price - parseFloat(newCalculatedPrice)).toFixed(2);
@@ -796,7 +906,7 @@
                         <p class="mb-1">總筆數: ${document.querySelectorAll('#resultBody tr').length} 筆</p>
                         <p class="mb-0">總行程收入: HK$ ${sumPrice.toFixed(2)}</p>
                         <p class="mb-0">總差額: HK$ ${totalDifference.toFixed(2)}</p>
-                    `;金
+                    `;
                 }
                 airportModal.hide();
             }
