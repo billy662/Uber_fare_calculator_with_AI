@@ -22,8 +22,10 @@ class UberRide(BaseModel):
     distance_km: float
     surge_hkd: Optional[float] = None
     waiting_fee: Optional[str] = None
+    tip: Optional[float] = None
     price_hkd: float
     type_of_ride: str
+    airport_trip: str
 
 def create_session_with_retries():
     session = requests.Session()
@@ -89,16 +91,20 @@ def generate(image_urls):
         return {"error": "No images were successfully processed"}
     
     # System instruction
-    system_instruction = """I will provide screenshots of my Uber ride history in Hong Kong. I need you to extract the data from it summarizing the details of each trip and turn the data in JSON.
+    system_instruction = """
+I will provide screenshots of my Uber ride history in Hong Kong. I need you to extract the data from it summarizing the details of each trip and turn the data in JSON.
 The JSON should include the following columns and sort by time, from earliest to latest, and exclude rides that are canceled:
 *Time of the ride
 *Duration (minutes): Numeric value (e.g., 20.43).
 *Distance (km):
 *Surge (HK$): Amount of 加乘費用 or blank if none. Do not treat 通行費 as 加乘費用.
-*Waiting Fee?:  If, within the ride details, there is a visual indicator consisting of a small, green colored box containing an upward pointing arrow icon, and the text "已增加" displayed alongside or within that box, then in the "Waiting Fee?" column, enter "X". Otherwise, leave the cell blank. 
-*Price (HK$):
+*Waiting Fee?:  If, within the ride details, there is a visual indicator consisting of a small, green colored box containing an upward pointing arrow icon, and the text "已增加" displayed alongside or within that box, then output "X". Otherwise, leave the output blank. 
+*Tip: If within the ride details, there is a text "貼士", the amount next to it represents the tip. If the trip includes tip, output the amount of the tip, otherwise leave the output blank.
+*Price (HK$): 
 *Type of ride: Usually "的士(預定價錢)", "咪錶的士" or "咪錶的士(乘客八五折)"
-Please ensure the JSON accurately reflects the information in the screenshot. Show the JSON only."""
+*Airport trip?: You need to identify trips that are starting or ending in Chek Lap Kok(赤鱲角). In the little maps show in the images, the green circle represents the trip starting point and the red circle represents ending point. You can also look for hints below the mini map, the first address represents the trip starting point and the second address represents the trip ending point. Output "normal" for non Chek Lap Kok related trips, "fromAirport" for trips staring from Chek Lap Kok, "toAirport" for trips ending in Chek Lap Kok. Please make sure this output is super accurate.
+Please ensure the JSON accurately reflects the information in the screenshot. Show the JSON only..
+"""
     
     try:
         # Send request with JSON configuration
@@ -109,6 +115,9 @@ Please ensure the JSON accurately reflects the information in the screenshot. Sh
                 'response_mime_type': 'application/json',
                 'response_schema': list[UberRide],
                 'system_instruction': system_instruction,
+                'temperature': 0.2,
+                'top_p': 0.95,
+                'top_k': 50,
             }
         )
         
@@ -124,8 +133,10 @@ Please ensure the JSON accurately reflects the information in the screenshot. Sh
                 "Distance (km)": ride.distance_km,
                 "Surge (HK$)": str(ride.surge_hkd) if ride.surge_hkd is not None else "",
                 "Waiting Fee?": ride.waiting_fee if ride.waiting_fee else "",
+                "Tip": str(ride.tip) if ride.tip is not None else "",
                 "Price (HK$)": ride.price_hkd,
-                "Type of ride": ride.type_of_ride
+                "Type of ride": ride.type_of_ride,
+                "Airport trip?": ride.airport_trip
             }
             result.append(formatted_ride)
         
