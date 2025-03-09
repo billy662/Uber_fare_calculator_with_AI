@@ -507,10 +507,7 @@
 
                     var calculatedPrice = calculatePrice(duration, distance, surge, 0 ,tip, airportTrip, rideType);
                     var difference = (price - calculatedPrice).toFixed(2);
-                    if(rideType.startsWith('咪錶的士')){
-                        calculatedPrice = price;
-                        difference = 0;
-                    }
+
                     sumDifference += parseFloat(difference);
 
                     row.innerHTML = `
@@ -642,6 +639,11 @@
                             { maxKm: 15, rate: 6.31 },
                             { maxKm: Infinity, rate: 5.12 }
                         ]
+                    },
+                    'metered_taxi': {
+                        'normal': {
+                            isMetered: true
+                        }
                     }
                 },
                 'uberx': {
@@ -731,6 +733,11 @@
                 // Determine service type and commission based on ride type
                 if (rideType) {
                     const rideTypeLower = rideType.toLowerCase();
+                    if (rideTypeLower.startsWith('咪錶的士')) {
+                        serviceType = 'metered_taxi';
+                        // Return the actual price for metered taxis
+                        return parseFloat(price).toFixed(2);
+                    }
                     if (rideTypeLower.includes('uber pet')) {
                         serviceType = 'uberx';
                         commission = 0.73;
