@@ -794,9 +794,9 @@
                     const sumPrice = parseFloat(document.querySelector('#resultFooter').children[1].textContent.split('$')[1]);
                     resultFooter.innerHTML = `
                         <p class="mb-1">總筆數: ${document.querySelectorAll('#resultBody tr').length} 筆</p>
-                        <p class="mb-0">總金額: HK$ ${sumPrice.toFixed(2)}</p>
+                        <p class="mb-0">總行程收入: HK$ ${sumPrice.toFixed(2)}</p>
                         <p class="mb-0">總差額: HK$ ${totalDifference.toFixed(2)}</p>
-                    `;
+                    `;金
                 }
                 airportModal.hide();
             }
