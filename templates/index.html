@@ -159,12 +159,6 @@
             margin-right: 5px;
         }
 
-        .hide-calc-columns .calculatedPrice,
-        .hide-calc-columns .priceDifference,
-        .hide-calc-columns .calc-column {
-            display: none;
-        }
-
         #toggleCalcColumns i {
             margin-right: 5px;
         }
@@ -352,9 +346,9 @@
                                             <th>等候費</th>
                                             <th>貼士</th>
                                             <th>行程收入</th>
-                                            <th class="calc-column">應得收入</th>
-                                            <th class="calc-column">差額</th>
-                                            <th class="calc-column">機場行程?</th>
+                                            <th>應得收入</th>
+                                            <th>差額</th>
+                                            <th>機場行程?</th>
                                         </tr>
                                     </thead>
                                     <tbody id="resultBody">
@@ -643,7 +637,7 @@
                         <td>${item['Price (HK$)']}</td>
                         <td class="calculatedPrice">${calculatedPrice}</td>
                         <td class="priceDifference ${parseFloat(difference) <= -5 ? 'bigPriceDifference' : ''}">${difference}</td>
-                        <td class="calc-column">
+                        <td>
                             ${!['Comfort', 'UberXL', 'UberXXL', 'Black'].includes(rideType) ? `
                                 <button class="btn btn-sm btn-outline-secondary airport-btn" data-type="normal">
                                     <i class="bi bi-airplane"></i>
