@@ -524,7 +524,7 @@ function displayResults(data) {
             <td class="calculatedPrice">${calculatedPrice}</td>
             <td class="priceDifference ${parseFloat(difference) <= -5 ? 'bigPriceDifference' : ''}">${difference}</td>
             <td>
-                ${!['Comfort', 'UberXL', 'UberXXL', 'Black'].includes(rideType) ? `
+                ${!['Comfort', 'UberXL', 'UberXXL', 'Black'].includes(rideType) && !rideType.startsWith('咪錶的士') ? `
                     <button class="btn btn-sm btn-outline-secondary airport-btn" data-type="normal">
                         <i class="bi bi-airplane"></i>
                     </button>
