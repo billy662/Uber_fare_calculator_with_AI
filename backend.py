@@ -148,11 +148,15 @@ Please ensure the JSON accurately reflects the information in the screenshot. Sh
         # Provide error message if there's an error
         error_message = [
             {
+                "Time of the ride": "",
                 "Duration (minutes)": 0,
                 "Distance (km)": 0,
                 "Surge (HK$)": "0",
                 "Waiting Fee?": "0",
-                "Price (HK$)": 0
+                "Tip": "0", 
+                "Price (HK$)": 0,
+                "Type of ride": "",
+                "Airport trip?": "",
             }
         ]
         
