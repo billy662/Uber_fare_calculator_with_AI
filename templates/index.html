@@ -1,1062 +1,171 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uber 收據分析</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #5D5CDE;
-        }
-        body {
-            background-color: #181818;
-            color: #f8f9fa;
-            transition: background-color 0.3s ease;
-        }
-        .card {
-            background-color: #242424;
-            color: #f8f9fa;
-            border: 1px solid #333;
-        }
-        .table {
-            color: #f8f9fa;
-            font-size: 15px;
-            white-space: nowrap;  /* Prevent text wrapping */
-        }
-        .form-control {
-            background-color: #333;
-            color: #f8f9fa;
-            border-color: #444;
-        }
-        .upload-area {
-            border: 2px dashed #555;
-            padding: 2rem;
-            border-radius: 0.5rem;
-            text-align: center;
-            margin-bottom: 1.5rem;
-            cursor: pointer;
-            transition: border-color 0.3s ease;
-        }
-        .upload-area:hover {
-            border-color: var(--primary-color);
-        }
-        .image-preview {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .preview-item {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            overflow: hidden;
-            border-radius: 4px;
-        }
-        .preview-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .remove-btn {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            background: rgba(0,0,0,0.6);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-        .loader {
-            display: none;
-            text-align: center;
-            padding: 2rem;
-        }
-        .spinner-border {
-            width: 3rem;
-            height: 3rem;
-        }
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-        .btn-primary:hover {
-            background-color: #4b4abf;
-            border-color: #4b4abf;
-        }
-        #columnTogglePopup {
-            min-width: 150px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-        }
-
-        #columnTogglePopup .form-check {
-            margin-bottom: 0.25rem;
-        }
-
-        #columnTogglePopup .form-check-input:checked {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-
-        #columnTogglePopup .form-check-label {
-            font-size: 0.875rem;
-            color: #f8f9fa;
-        }
-        .result-table {
-            display: none;
-            margin-top: 2rem;
-        }
-        .table-striped>tbody>tr:nth-of-type(odd) {
-            background-color: #333;
-        }
-        .alert {
-            display: none;
-            margin-top: 1rem;
-        }
-        /* Add this new CSS rule to make the notice box visible */
-        #noticeBox.alert {
-            display: block;
-        }
-        .table th, .table td {
-            border-color: #333;
-        }
-        .table thead th {
-            background-color: #333;
-            border-bottom: 2px solid #555;
-        }
-        .table-bordered {
-          border: 1px solid #333;
-          margin-top: 5px;
-        }
-        .waitingFeeInput {
-            width: 70px;
-        }
-        .bigPriceDifference{
-            color: red;
-            font-weight: bold;
-        }
-
-        #copyTableBtn {
-            background-color: #444;
-            border-color: #555;
-        }
-
-        #copyTableBtn:hover {
-            background-color: #555;
-            border-color: #666;
-        }
-
-        #copyTableBtn i {
-            margin-right: 5px;
-        }
-
-        #toggleCalcColumns i {
-            margin-right: 5px;
-        }
-
-        .airport-btn {
-            width: 38px;
-        }
-        .airport-btn.btn-primary {
-            background-color: var(--primary-color);
-        }
-        .airport-btn.btn-info {
-            background-color: #0dcaf0;
-        }
-        .modal-content {
-            border: 1px solid #444;
-        }
-
-        /* Responsive table styles */
-        @media (max-width: 768px) {
-            .table {
-                font-size: 14px;  /* Smaller font size on mobile */
-            }
-            
-            .table td, .table th {
-                padding: 0.5rem 0.3rem;  /* Reduce padding on mobile */
-            }
-
-            /* Make the table horizontally scrollable */
-            .table-responsive {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                margin-bottom: 1rem;
-                background-repeat: no-repeat;
-                background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
-                background-position: 0 0, 100% 0, 0 0, 100% 0;
-                background-attachment: local, local, scroll, scroll;
-            }
-
-            /* Adjust input size on mobile */
-            .waitingFeeInput {
-                width: 50px;
-                padding: 0.25rem;
-            }
-
-            /* Adjust airport button size on mobile */
-            .airport-btn {
-                width: 32px;
-                height: 32px;
-                padding: 0.25rem;
-            }
-        }
-
-        /* Make sure table cells don't wrap awkwardly */
-        .table td {
-            vertical-align: middle;
-        }
-
-        /* Ensure consistent number alignment */
-        .table td:nth-child(2),
-        .table td:nth-child(3),
-        .table td:nth-child(4),
-        .table td:nth-child(5),
-        .table td:nth-child(6),
-        .table td:nth-child(7),
-        .table td:nth-child(8),
-        .table td:nth-child(9) {
-            text-align: right;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uber 收據分析</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <!-- External CSS -->
+  <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white">
-                        <h3 class="mb-0">Uber 收據分析工具</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="alert alert-danger" id="errorAlert" role="alert"></div>
-                        
-                        <div class="upload-area" id="uploadArea">
-                            <div>
-                                <i class="bi bi-cloud-arrow-up fs-1"></i>
-                                <p class="mb-0">點擊或拖放圖片到此處<br/>每次最多上傳10張</p>
-                            </div>
-                            <input type="file" id="fileInput" multiple accept="image/*" class="d-none">
-                        </div>
-
-                        <div class="image-preview" id="imagePreview"></div>
-
-                        <div class="d-grid gap-2 mt-3">
-                            <div class="row g-2">
-                                <div class="col">
-                                    <button id="submitBtn" class="btn btn-primary w-100" disabled>
-                                        送出圖片進行分析
-                                    </button>
-                                </div>
-                                <div class="col-auto">
-                                    <button id="clearAllBtn" class="btn btn-danger" disabled>
-                                        清除所有圖片
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="noticeBox" class="alert alert-secondary mt-3 border">
-                            <h6 class="fw-bold">注意事項:</h6>
-                            <ul class="mb-0">
-                                <li>請唔好使用精簡版介面, 否則貼士及加乘不唔會被計算在內</li>
-                                <li>請確保Cap圖清楚顯示價錢,行程時長,距離,貼士同加乘, 唔好將啲數字cut走一半, 否則計算會不準確</li>
-                                <li>本程式並不會save低你嘅行程紀錄, 所有已上傳嘅data經處理後就會自動刪除</li>
-                            </ul>
-                        </div>
-
-                        <div class="loader" id="loader">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <p class="mt-3">正在處理圖片，請稍候...</p>
-                        </div>
-
-                        <div class="result-table" id="resultTable">
-                            <button id="toggleCalcColumns" class="btn btn-secondary btn-sm">
-                                <i class="bi bi-layout-three-columns"></i> 顯示/隱藏欄
-                            </button>
-                            <button id="copyTableBtn" class="btn btn-secondary btn-sm">
-                                <i class="bi bi-clipboard"></i> 複製表格
-                            </button>
-                            <div id="columnTogglePopup" class="position-absolute bg-dark border rounded p-2 mt-1" style="display: none; z-index: 1000;">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="toggleTime" checked>
-                                    <label class="form-check-label" for="toggleTime">時間</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="toggleType" checked>
-                                    <label class="form-check-label" for="toggleType">車種</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="toggleDuration" checked>
-                                    <label class="form-check-label" for="toggleDuration">時長</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="toggleDistance" checked>
-                                    <label class="form-check-label" for="toggleDistance">距離</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="toggleSurge" checked>
-                                    <label class="form-check-label" for="toggleSurge">加乘$</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="toggleWaitingFee" checked>
-                                    <label class="form-check-label" for="toggleWaitingFee">等候費</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="toggleTip" checked>
-                                    <label class="form-check-label" for="toggleTip">貼士</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="togglePrice" checked>
-                                    <label class="form-check-label" for="togglePrice">行程收入</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="toggleCalcPrice" checked>
-                                    <label class="form-check-label" for="toggleCalcPrice">應得收入</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="toggleDiff" checked>
-                                    <label class="form-check-label" for="toggleDiff">差額</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="toggleAirport" checked>
-                                    <label class="form-check-label" for="toggleAirport">機場行程?</label>
-                                </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table table-striped table-dark table-bordered rounded" style="border-collapse: separate;border: solid #616161 1px;">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th>時間</th>
-                                            <th>車種</th>
-                                            <th>時長</th>
-                                            <th>距離</th>
-                                            <th>加乘$</th>
-                                            <th>等候費</th>
-                                            <th>貼士</th>
-                                            <th>行程收入</th>
-                                            <th>應得收入</th>
-                                            <th>差額</th>
-                                            <th>機場行程?</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="resultBody">
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="mt-3 text-end" id="resultFooter">
-                            </div>
-                        </div>
-                    </div>
-                </div>
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card shadow">
+          <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Uber 收據分析工具</h3>
+          </div>
+          <div class="card-body">
+            <div class="alert alert-danger" id="errorAlert" role="alert"></div>
+            <div class="upload-area" id="uploadArea">
+              <div>
+                <i class="bi bi-cloud-arrow-up fs-1"></i>
+                <p class="mb-0">點擊或拖放圖片到此處<br>每次最多上傳10張</p>
+              </div>
+              <input type="file" id="fileInput" multiple accept="image/*" class="d-none">
             </div>
-        </div>
-    </div>
-
-    <!-- Airport Selection Modal -->
-    <div class="modal fade" id="airportModal" tabindex="-1" aria-labelledby="airportModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content bg-dark text-light">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="airportModalLabel">選擇機場行程類型</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="image-preview" id="imagePreview"></div>
+            <div class="d-grid gap-2 mt-3">
+              <div class="row g-2">
+                <div class="col">
+                  <button id="submitBtn" class="btn btn-primary w-100" disabled>
+                    送出圖片進行分析
+                  </button>
                 </div>
-                <div class="modal-body text-center">
-                    <button type="button" class="btn btn-primary m-2" id="toAirportBtn">
-                        <i class="bi bi-airplane-fill"></i> 前往機場
-                    </button>
-                    <button type="button" class="btn btn-info m-2" id="fromAirportBtn">
-                        <i class="bi bi-airplane"></i> 由機場出發
-                    </button>
-                    <button type="button" class="btn btn-secondary m-2" id="resetAirportBtn">
-                        <i class="bi bi-x-circle"></i> 重設
-                    </button>
+                <div class="col-auto">
+                  <button id="clearAllBtn" class="btn btn-danger" disabled>
+                    清除所有圖片
+                  </button>
                 </div>
+              </div>
             </div>
+            <div id="noticeBox" class="alert alert-secondary mt-3 border">
+              <h6 class="fw-bold">注意事項:</h6>
+              <ul class="mb-0">
+                <li>請唔好使用精簡版介面, 否則貼士及加乘不唔會被計算在內</li>
+                <li>請確保Cap圖清楚顯示價錢, 行程時長, 距離, 貼士同加乘, 唔好將啲數字cut走一半, 否則計算會不準確</li>
+                <li>本程式並不會save低你嘅行程紀錄, 所有已上傳嘅data經處理後就會自動刪除</li>
+                <li>已取消嘅行程不會計算在內</li>
+                <li>唔同圖片內出現嘅相同行程不會被重覆計算</li>
+              </ul>
+            </div>
+            <div class="loader" id="loader">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-3">正在處理圖片，請稍候...</p>
+            </div>
+            <div class="result-table" id="resultTable">
+              <button id="toggleCalcColumns" class="btn btn-secondary btn-sm">
+                <i class="bi bi-layout-three-columns"></i> 顯示/隱藏欄
+              </button>
+              <button id="copyTableBtn" class="btn btn-secondary btn-sm">
+                <i class="bi bi-clipboard"></i> 複製表格
+              </button>
+              <div id="columnTogglePopup" class="position-absolute bg-dark border rounded p-2 mt-1" style="display: none; z-index: 1000;">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="toggleTime" checked>
+                  <label class="form-check-label" for="toggleTime">時間</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="toggleType" checked>
+                  <label class="form-check-label" for="toggleType">車種</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="toggleDuration" checked>
+                  <label class="form-check-label" for="toggleDuration">時長</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="toggleDistance" checked>
+                  <label class="form-check-label" for="toggleDistance">距離</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="toggleSurge" checked>
+                  <label class="form-check-label" for="toggleSurge">加乘$</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="toggleWaitingFee" checked>
+                  <label class="form-check-label" for="toggleWaitingFee">等候費</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="toggleTip" checked>
+                  <label class="form-check-label" for="toggleTip">貼士</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="togglePrice" checked>
+                  <label class="form-check-label" for="togglePrice">行程收入</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="toggleCalcPrice" checked>
+                  <label class="form-check-label" for="toggleCalcPrice">應得收入</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="toggleDiff" checked>
+                  <label class="form-check-label" for="toggleDiff">差額</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="toggleAirport" checked>
+                  <label class="form-check-label" for="toggleAirport">機場行程?</label>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-striped table-dark table-bordered rounded" style="border-collapse: separate;border: solid #616161 1px;">
+                  <thead class="table-dark">
+                    <tr>
+                      <th>時間</th>
+                      <th>車種</th>
+                      <th>時長</th>
+                      <th>距離</th>
+                      <th>加乘$</th>
+                      <th>等候費</th>
+                      <th>貼士</th>
+                      <th>行程收入</th>
+                      <th>應得收入</th>
+                      <th>差額</th>
+                      <th>機場行程?</th>
+                    </tr>
+                  </thead>
+                  <tbody id="resultBody"></tbody>
+                </table>
+              </div>
+              <div class="mt-3 text-end" id="resultFooter"></div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-        // 檢測深色模式
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.classList.add('dark');
-        }
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-            if (event.matches) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-        });
+  <!-- Airport Selection Modal -->
+  <div class="modal fade" id="airportModal" tabindex="-1" aria-labelledby="airportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark text-light">
+        <div class="modal-header">
+          <h5 class="modal-title" id="airportModalLabel">選擇機場行程類型</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center">
+          <button type="button" class="btn btn-primary m-2" id="toAirportBtn">
+            <i class="bi bi-airplane-fill"></i> 前往機場
+          </button>
+          <button type="button" class="btn btn-info m-2" id="fromAirportBtn">
+            <i class="bi bi-airplane"></i> 由機場出發
+          </button>
+          <button type="button" class="btn btn-secondary m-2" id="resetAirportBtn">
+            <i class="bi bi-x-circle"></i> 重設
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        // 處理圖片上傳
-        document.addEventListener('DOMContentLoaded', function() {
-            const uploadArea = document.getElementById('uploadArea');
-            const fileInput = document.getElementById('fileInput');
-            const imagePreview = document.getElementById('imagePreview');
-            const submitBtn = document.getElementById('submitBtn');
-            const loader = document.getElementById('loader');
-            const resultTable = document.getElementById('resultTable');
-            const resultBody = document.getElementById('resultBody');
-            const resultFooter = document.getElementById('resultFooter');
-            const errorAlert = document.getElementById('errorAlert');
-            const toggleCalcColumns = document.getElementById('toggleCalcColumns');
-            const columnTogglePopup = document.getElementById('columnTogglePopup');
-            const clearAllBtn = document.getElementById('clearAllBtn');
-
-            
-            let selectedFiles = [];
-
-            // 點擊上傳區域觸發文件輸入
-            uploadArea.addEventListener('click', () => {
-                fileInput.click();
-            });
-
-            // 拖放功能
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                uploadArea.addEventListener(eventName, preventDefaults, false);
-            });
-
-            function preventDefaults(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-
-            uploadArea.addEventListener('dragenter', () => {
-                uploadArea.style.borderColor = 'var(--primary-color)';
-            });
-
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.style.borderColor = '';
-            });
-
-            uploadArea.addEventListener('drop', (e) => {
-                uploadArea.style.borderColor = '';
-                const dt = e.dataTransfer;
-                const files = dt.files;
-                handleFiles(files);
-            });
-
-            // 文件選擇變更處理
-            fileInput.addEventListener('change', function() {
-                handleFiles(this.files);
-            });
-
-            // 處理選擇的文件
-            function handleFiles(files) {
-                if (files.length === 0) return;
-                
-                // Get current valid files count
-                const currentValidFiles = selectedFiles.filter(file => file !== null).length;
-                
-                // Calculate how many more files we can accept
-                const remainingSlots = 10 - currentValidFiles;
-                
-                if (remainingSlots <= 0) {
-                    errorAlert.textContent = '已達到最大上傳限制 (10張圖片)';
-                    errorAlert.style.display = 'block';
-                    return;
-                }
-
-                // Only process up to the remaining slots
-                const filesToProcess = Array.from(files).slice(0, remainingSlots);
-                
-                filesToProcess.forEach(file => {
-                    if (!file.type.match('image.*')) return;
-                    
-                    selectedFiles.push(file);
-                    addImagePreview(file, selectedFiles.length - 1);
-                });
-                
-                if (files.length > remainingSlots) {
-                    errorAlert.textContent = `已達到最大上傳限制，只接受了 ${remainingSlots} 張圖片`;
-                    errorAlert.style.display = 'block';
-                }
-                
-                updateSubmitButton();
-            }
-
-            // 添加圖片預覽
-            function addImagePreview(file, index) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    const div = document.createElement('div');
-                    div.className = 'preview-item';
-                    div.dataset.index = index;
-                    
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    
-                    const removeBtn = document.createElement('button');
-                    removeBtn.className = 'remove-btn';
-                    removeBtn.innerHTML = '×';
-                    removeBtn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        removeImage(index);
-                    });
-                    
-                    div.appendChild(img);
-                    div.appendChild(removeBtn);
-                    imagePreview.appendChild(div);
-                };
-                
-                reader.readAsDataURL(file);
-            }
-
-            // 移除圖片
-            function removeImage(index) {
-                selectedFiles[index] = null;
-                const item = imagePreview.querySelector(`[data-index="${index}"]`);
-                if (item) {
-                    item.remove();
-                }
-                updateSubmitButton();
-            }
-
-            // 更新提交按鈕狀態
-            function updateSubmitButton() {
-                const validFiles = selectedFiles.filter(file => file !== null);
-                submitBtn.disabled = validFiles.length === 0;
-                clearAllBtn.disabled = validFiles.length === 0;
-            }
-
-            // Add clear all button event listener
-            clearAllBtn.addEventListener('click', function() {
-                selectedFiles = [];
-                imagePreview.innerHTML = '';
-                updateSubmitButton();
-            });
-
-            // Submit button event listener - send to Flask backend
-            submitBtn.addEventListener('click', async function() {
-                const validFiles = selectedFiles.filter(file => file !== null);
-                if (validFiles.length === 0) return;
-                
-                // Hide any previous errors
-                errorAlert.style.display = 'none';
-                
-                // Show loading animation
-                loader.style.display = 'block';
-                resultTable.style.display = 'none';
-                submitBtn.disabled = true;
-
-                // Hide notice box
-                document.getElementById('noticeBox').style.display = 'none';
-                
-                try {
-                    const formData = new FormData();
-                    validFiles.forEach((file) => {
-                        formData.append('images', file);
-                    });
-                    
-                    // Send files to Flask backend
-                    const response = await fetch('/api/process-images', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error || 'Upload failed');
-                    }
-                    
-                    const data = await response.json();
-                    
-                    if (data.error) {
-                        throw new Error(data.error);
-                    }
-                    
-                    displayResults(data);
-                    
-                } catch (error) {
-                    console.error('Error:', error);
-                    errorAlert.textContent = error.message || 'An error occurred during processing';
-                    errorAlert.style.display = 'block';
-                    loader.style.display = 'none';
-                } finally {
-                    submitBtn.disabled = false;
-                }
-            });
-
-            // 顯示結果
-            function displayResults(data) {
-                resultBody.innerHTML = '';
-
-                var count = 0; //number of rows
-                var sumPrice = 0; //sum of price
-                var sumDifference = 0; //sum of difference
-                
-                data.forEach(item => {
-                    count++;
-
-                    var duration = item['Duration (minutes)'];
-                    var distance = item['Distance (km)'];
-                    var surge = item['Surge (HK$)'];
-                    var tip = item['Tip'];
-                    var price = item['Price (HK$)'];
-                    var airportTrip = item['Airport trip?'];
-                    var rideType = item['Type of ride'];
-
-                    const row = document.createElement('tr');
-                    sumPrice += price;
-                    
-
-                    var calculatedPrice = calculatePrice(duration, distance, surge, 0 ,tip, airportTrip, rideType);
-                    var difference = (price - calculatedPrice).toFixed(2);
-                    if(rideType.startsWith('咪錶的士')){
-                        calculatedPrice = price;
-                        difference = 0;
-                    }
-                    sumDifference += parseFloat(difference);
-
-                    row.innerHTML = `
-                        <td>${item['Time of the ride']}</td>
-                        <td>${rideType}</td>
-                        <td>${item['Duration (minutes)']}</td>
-                        <td>${item['Distance (km)']}</td>
-                        <td>${item['Surge (HK$)'] || ''}</td>
-                        <td>${item['Waiting Fee?'] === 'X' ? `<input type="number" class="waitingFeeInput" step="0.01" min="0" max="100"/>` : item['Waiting Fee?'] || ''}</td>
-                        <td>${tip}</td>
-                        <td>${item['Price (HK$)']}</td>
-                        <td class="calculatedPrice">${calculatedPrice}</td>
-                        <td class="priceDifference ${parseFloat(difference) <= -5 ? 'bigPriceDifference' : ''}">${difference}</td>
-                        <td>
-                            ${!['Comfort', 'UberXL', 'UberXXL', 'Black'].includes(rideType) ? `
-                                <button class="btn btn-sm btn-outline-secondary airport-btn" data-type="normal">
-                                    <i class="bi bi-airplane"></i>
-                                </button>
-                            ` : ''}
-                        </td>
-                    `;
-
-                    row.cells[0].dataset.rideType = rideType;
-                    
-                    resultBody.appendChild(row);
-
-                    // Add event listener for waiting fee input if it exists
-                    const waitingFeeInput = row.querySelector('.waitingFeeInput');
-                    if (waitingFeeInput) {
-                        waitingFeeInput.setAttribute('pattern', '^\d*\.?\d{0,2}$');
-
-                        waitingFeeInput.addEventListener('input', function(e) {
-                            // Remove any non-numeric characters except decimal point
-                            let value = this.value.replace(/[^\d.]/g, '');
-                            
-                            // Ensure only one decimal point
-                            const decimalPoints = value.match(/\./g);
-                            if (decimalPoints && decimalPoints.length > 1) {
-                                value = value.replace(/\.+$/, '');
-                            }
-
-                            // Handle decimal places
-                            if (value.includes('.')) {
-                                const [whole, decimal] = value.split('.');
-                                value = whole + '.' + (decimal || '').slice(0, 2);
-                            }
-
-                            // Check if value is within 0-100 range
-                            let numValue = parseFloat(value);
-                            if (numValue > 100) {
-                                value = '100';
-                                numValue = 100;
-                            }
-
-                            // Update input value if it changed
-                            if (this.value !== value) {
-                                this.value = value;
-                            }
-
-                            // Only proceed with calculation if we have a valid number
-                            if (!isNaN(numValue) || this.value === '') {
-                                const waitingFee = this.value === '' ? 0 : parseFloat(this.value);
-                                const newCalculatedPrice = calculatePrice(duration, distance, surge, waitingFee, tip, airportTrip, row.cells[0].dataset.rideType);
-                                const calculatedPriceCell = row.querySelector('.calculatedPrice');
-                                const differenceCell = row.querySelector('.priceDifference');
-                                
-                                calculatedPriceCell.textContent = newCalculatedPrice;
-                                const newDifference = (price - newCalculatedPrice).toFixed(2);
-                                differenceCell.textContent = newDifference;
-
-                                // Recalculate total difference
-                                let totalDifference = 0;
-                                document.querySelectorAll('.priceDifference').forEach(cell => {
-                                    totalDifference += parseFloat(cell.textContent || 0);
-                                });
-
-                                // Update summary footer
-                                resultFooter.innerHTML = `
-                                    <p class="mb-1">總筆數: ${count} 筆</p>
-                                    <p class="mb-0">總行程收入: HK$ ${sumPrice.toFixed(2)}</p>
-                                    <p class="mb-0">總差額: HK$ ${totalDifference.toFixed(2)}</p>
-                                `;
-                            }
-                        });
-                    }
-                });
-                
-                // Initial summary row
-                resultFooter.innerHTML = `
-                    <p class="mb-1">總筆數: ${count} 筆</p>
-                    <p class="mb-0">總行程收入: HK$ ${sumPrice.toFixed(2)}</p>
-                    <p class="mb-0">總差額: HK$ ${sumDifference.toFixed(2)}</p>
-                `;
-
-                loader.style.display = 'none';
-                resultTable.style.display = 'block';
-            }
-
-
-            // Define fare configurations for different ride types
-            const fareConfigs = {
-                'taxi': {
-                    'normal': {
-                        minCharge: 40.95,
-                        baseFare: 15.5,
-                        perMinPrice: 2.1,
-                        perKmRates: [
-                            { maxKm: 5, rate: 5.59 },
-                            { maxKm: 10, rate: 6.79 },
-                            { maxKm: 15, rate: 6.64 },
-                            { maxKm: Infinity, rate: 5.39 }
-                        ]
-                    },
-                    'fromAirport': {
-                        minCharge: 42.95,
-                        baseFare: 15.5,
-                        perMinPrice: 2.1,
-                        perKmRates: [
-                            { maxKm: 5, rate: 5.87 },
-                            { maxKm: 10, rate: 7.13 },
-                            { maxKm: 15, rate: 6.64 },
-                            { maxKm: Infinity, rate: 5.39 }
-                        ]
-                    },
-                    'toAirport': {
-                        minCharge: 40.95,
-                        baseFare: 15.5,
-                        perMinPrice: 2.1,
-                        perKmRates: [
-                            { maxKm: 5, rate: 5.59 },
-                            { maxKm: 10, rate: 6.79 },
-                            { maxKm: 15, rate: 6.31 },
-                            { maxKm: Infinity, rate: 5.12 }
-                        ]
-                    }
-                },
-                'uberx': {
-                    'normal': {
-                        minCharge: 40.95,
-                        baseFare: 18,
-                        perMinPrice: 2.04,
-                        perKmRates: [
-                            { maxKm: 5, rate: 4.73 },
-                            { maxKm: 10, rate: 5.23 },
-                            { maxKm: 15, rate: 5.63 },
-                            { maxKm: Infinity, rate: 4.88 }
-                        ]
-                    },
-                    'fromAirport': {
-                        minCharge: 42.95,
-                        baseFare: 18,
-                        perMinPrice: 2.04,
-                        perKmRates: [
-                            { maxKm: 5, rate: 4.97 },
-                            { maxKm: 10, rate: 5.49 },
-                            { maxKm: 15, rate: 5.63 },
-                            { maxKm: Infinity, rate: 4.88 }
-                        ]
-                    },
-                    'toAirport': {
-                        minCharge: 40.95,
-                        baseFare: 18,
-                        perMinPrice: 2.04,
-                        perKmRates: [
-                            { maxKm: 5, rate: 4.73 },
-                            { maxKm: 10, rate: 5.23 },
-                            { maxKm: 15, rate: 5.35 },
-                            { maxKm: Infinity, rate: 4.64 }
-                        ]
-                    }
-                },
-                'comfort': {
-                    'normal': {
-                        minCharge: 56,
-                        baseFare: 26.85,
-                        perMinPrice: 1.6,
-                        perKmPrice: 6.29
-                    }
-                },
-                'uberxl': {
-                    'normal': {
-                        minCharge: 75,
-                        baseFare: 40,
-                        perMinPrice: 1.9,
-                        perKmPrice: 8.68
-                    }
-                },
-                'uberxxl': {
-                    'normal': {
-                        minCharge: 80,
-                        baseFare: 45,
-                        perMinPrice: 1.9,
-                        perKmPrice: 9.22
-                    }
-                },
-                'black': {
-                    'normal': {
-                        minCharge: 90,
-                        baseFare: 45,
-                        perMinPrice: 1.9,
-                        perKmPrice: 9.22
-                    }
-                }
-            };
-
-
-            // Function to get per km rate based on distance
-            function getPerKmRate(distance, rateConfig) {
-                if (rateConfig.perKmPrice !== undefined) {
-                    return rateConfig.perKmPrice;
-                }
-                // Otherwise, use the variable rate system
-                return rateConfig.perKmRates.find(rate => distance <= rate.maxKm).rate;
-            }
-
-            function calculatePrice(duration, distance, surge, waitingFee = 0, tip, airportTrip, rideType) {
-                let serviceType = 'taxi'; // default to taxi
-                var commission = 0.9;
-                let petFee = 0;
-    
-                // Determine service type and commission based on ride type
-                if (rideType) {
-                    const rideTypeLower = rideType.toLowerCase();
-                    if (rideTypeLower.includes('uber pet')) {
-                        serviceType = 'uberx';
-                        commission = 0.73;
-                        petFee = 20; // Add $20 for Uber Pet rides
-                    } else if (rideTypeLower.includes('uberxxl')) {
-                        serviceType = 'uberxxl';
-                        commission = 0.7;
-                    } else if (rideTypeLower.includes('uberxl')) {
-                        serviceType = 'uberxl';
-                        commission = 0.7;
-                    } else if (rideTypeLower.includes('uberx')) {
-                        serviceType = 'uberx';
-                        commission = 0.73;
-                    } else if (rideTypeLower.includes('comfort')) {
-                        serviceType = 'comfort';
-                        commission = 0.7;
-                    }  else if (rideTypeLower.includes('black')) {
-                        serviceType = 'black';
-                        commission = 0.7;
-                    }
-                }
-
-                // For fixed-rate services, always use 'normal' config regardless of airport status
-                const useAirportTrip = ['taxi', 'uberx'].includes(serviceType) ? airportTrip : 'normal';
-                const config = fareConfigs[serviceType][useAirportTrip];
-                const perKmPrice = getPerKmRate(distance, config);
-
-                surge = typeof surge === 'string' ? parseFloat(surge) : surge;
-                tip = typeof tip === 'string' ? parseFloat(tip) : tip;
-
-                let price = (config.baseFare + 
-                    duration * config.perMinPrice + 
-                    (distance * perKmPrice) + 
-                    (surge || 0) + 
-                    waitingFee +
-                    petFee) * commission +
-                    (tip || 0);
-                
-                 if (price < config.minCharge) {
-                    price = config.minCharge * commission;
-                }
-                return price.toFixed(2);
-            }
-
-            // Copy table data to clipboard
-            const copyTableBtn = document.getElementById('copyTableBtn');
-
-            copyTableBtn.addEventListener('click', function() {
-                const rows = document.querySelectorAll('#resultBody tr');
-                let copyText = '';
-                
-                rows.forEach(row => {
-                    const cells = Array.from(row.querySelectorAll('td'));
-                    const rowData = cells
-                        .filter(cell => {
-                            // Check if the cell is visible (not display: none)
-                            const style = window.getComputedStyle(cell);
-                            return style.display !== 'none';
-                        })
-                        .map(cell => {
-                            // If there's an input field, get its value
-                            const input = cell.querySelector('input');
-                            if (input) {
-                                return input.value || '';
-                            }
-                            // Otherwise get the cell's text content
-                            return cell.textContent.trim();
-                        });
-                    
-                    copyText += rowData.join('\t') + '\n';
-                });
-                
-                navigator.clipboard.writeText(copyText).then(() => {
-                    // Temporarily change button text to show success
-                    const originalText = copyTableBtn.innerHTML;
-                    copyTableBtn.innerHTML = '<i class="bi bi-check"></i> Copied!';
-                    setTimeout(() => {
-                        copyTableBtn.innerHTML = originalText;
-                    }, 2000);
-                }).catch(err => {
-                    console.error('Failed to copy text:', err);
-                    alert('Failed to copy table data');
-                });
-            });
-
-            // Toggle popup when clicking the button
-            toggleCalcColumns.addEventListener('click', function(e) {
-                e.stopPropagation();
-                columnTogglePopup.style.display = columnTogglePopup.style.display === 'none' ? 'block' : 'none';
-            });
-
-            // Close popup when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!columnTogglePopup.contains(e.target) && e.target !== toggleCalcColumns) {
-                    columnTogglePopup.style.display = 'none';
-                }
-            });
-
-            // Handle checkbox changes
-            const columnMappings = {
-                'toggleTime': 0,
-                'toggleType': 1,
-                'toggleDuration': 2,
-                'toggleDistance': 3,
-                'toggleSurge': 4,
-                'toggleWaitingFee': 5,
-                'toggleTip': 6,
-                'togglePrice': 7,
-                'toggleCalcPrice': 8,
-                'toggleDiff': 9,
-                'toggleAirport': 10
-            };
-
-            Object.keys(columnMappings).forEach(checkboxId => {
-                const checkbox = document.getElementById(checkboxId);
-                checkbox.addEventListener('change', function() {
-                    const columnIndex = columnMappings[checkboxId];
-                    const table = document.querySelector('.table');
-                    
-                    // Toggle header
-                    const header = table.querySelector(`thead th:nth-child(${columnIndex + 1})`);
-                    if (header) {
-                        header.style.display = this.checked ? '' : 'none';
-                    }
-                    
-                    // Toggle all cells in this column
-                    const cells = table.querySelectorAll(`tbody td:nth-child(${columnIndex + 1})`);
-                    cells.forEach(cell => {
-                        cell.style.display = this.checked ? '' : 'none';
-                    });
-                });
-            });
-
-            // Airport button functionality
-            let currentRow = null;
-            const airportModal = new bootstrap.Modal(document.getElementById('airportModal'));
-
-            document.addEventListener('click', function(e) {
-                if (e.target.closest('.airport-btn')) {
-                    const btn = e.target.closest('.airport-btn');
-                    currentRow = btn.closest('tr');
-                    airportModal.show();
-                }
-            });
-
-            document.getElementById('toAirportBtn').addEventListener('click', function() {
-                updateAirportType('toAirport', '往機場');
-            });
-
-            document.getElementById('fromAirportBtn').addEventListener('click', function() {
-                updateAirportType('fromAirport', '由機場');
-            });
-
-            document.getElementById('resetAirportBtn').addEventListener('click', function() {
-                updateAirportType('normal', '');
-            });
-
-            function updateAirportType(airportType, label) {
-                if (currentRow) {
-                    const duration = parseFloat(currentRow.cells[2].textContent); 
-                    const distance = parseFloat(currentRow.cells[3].textContent);
-                    const surge = currentRow.cells[4].textContent; 
-                    const waitingFeeInput = currentRow.cells[5].querySelector('input'); 
-                    const waitingFee = waitingFeeInput ? parseFloat(waitingFeeInput.value) || 0 : 0;
-                    const tip = parseFloat(currentRow.cells[6].textContent) || 0; 
-                    const price = parseFloat(currentRow.cells[7].textContent);
-                    const rideType = currentRow.cells[0].dataset.rideType;
-
-                    const airportBtn = currentRow.querySelector('.airport-btn');
-                    airportBtn.dataset.type = airportType;
-                    airportBtn.classList.remove('btn-outline-secondary', 'btn-primary', 'btn-info');
-                    
-                    if (airportType === 'normal') {
-                        airportBtn.classList.add('btn-outline-secondary');
-                    } else if (airportType === 'toAirport') {
-                        airportBtn.classList.add('btn-primary');
-                        airportBtn.querySelector('i').classList.remove('bi-airplane');
-                        airportBtn.querySelector('i').classList.add('bi-airplane-fill');
-                    } else {
-                        airportBtn.classList.add('btn-info');
-                        airportBtn.querySelector('i').classList.remove('bi-airplane-fill');
-                        airportBtn.querySelector('i').classList.add('bi-airplane');
-                    }
-
-                    const newCalculatedPrice = calculatePrice(duration, distance, surge, waitingFee, tip, airportType, rideType);
-                    currentRow.querySelector('.calculatedPrice').textContent = newCalculatedPrice;
-                    
-                    const newDifference = (price - parseFloat(newCalculatedPrice)).toFixed(2);
-                    const differenceCell = currentRow.querySelector('.priceDifference');
-                    differenceCell.textContent = newDifference;
-                    differenceCell.classList.toggle('bigPriceDifference', parseFloat(newDifference) <= -5);
-
-                    // Recalculate total difference
-                    let totalDifference = 0;
-                    document.querySelectorAll('.priceDifference').forEach(cell => {
-                        totalDifference += parseFloat(cell.textContent || 0);
-                    });
-
-                    // Update summary footer
-                    const sumPrice = parseFloat(document.querySelector('#resultFooter').children[1].textContent.split('$')[1]);
-                    resultFooter.innerHTML = `
-                        <p class="mb-1">總筆數: ${document.querySelectorAll('#resultBody tr').length} 筆</p>
-                        <p class="mb-0">總行程收入: HK$ ${sumPrice.toFixed(2)}</p>
-                        <p class="mb-0">總差額: HK$ ${totalDifference.toFixed(2)}</p>
-                    `;
-                }
-                airportModal.hide();
-            }
-
-        });
-    </script>
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- External JavaScript -->
+  <script src="static/script.js"></script>
 </body>
 </html>

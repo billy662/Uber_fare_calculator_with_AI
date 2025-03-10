@@ -1,0 +1,220 @@
+:root {
+    --primary-color: #5D5CDE;
+}
+body {
+    background-color: #181818;
+    color: #f8f9fa;
+    transition: background-color 0.3s ease;
+}
+.card {
+    background-color: #242424;
+    color: #f8f9fa;
+    border: 1px solid #333;
+}
+.table {
+    color: #f8f9fa;
+    font-size: 15px;
+    white-space: nowrap;  /* Prevent text wrapping */
+}
+.form-control {
+    background-color: #333;
+    color: #f8f9fa;
+    border-color: #444;
+}
+.upload-area {
+    border: 2px dashed #555;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+.upload-area:hover {
+    border-color: var(--primary-color);
+}
+.image-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+.preview-item {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    overflow: hidden;
+    border-radius: 4px;
+}
+.preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.remove-btn {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.loader {
+    display: none;
+    text-align: center;
+    padding: 2rem;
+}
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.btn-primary:hover {
+    background-color: #4b4abf;
+    border-color: #4b4abf;
+}
+#columnTogglePopup {
+    min-width: 150px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+#columnTogglePopup .form-check {
+    margin-bottom: 0.25rem;
+}
+
+#columnTogglePopup .form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+#columnTogglePopup .form-check-label {
+    font-size: 0.875rem;
+    color: #f8f9fa;
+}
+.result-table {
+    display: none;
+    margin-top: 2rem;
+}
+.table-striped>tbody>tr:nth-of-type(odd) {
+    background-color: #333;
+}
+.alert {
+    display: none;
+    margin-top: 1rem;
+}
+/* Add this new CSS rule to make the notice box visible */
+#noticeBox.alert {
+    display: block;
+}
+.table th, .table td {
+    border-color: #333;
+}
+.table thead th {
+    background-color: #333;
+    border-bottom: 2px solid #555;
+}
+.table-bordered {
+  border: 1px solid #333;
+  margin-top: 5px;
+}
+.waitingFeeInput {
+    width: 70px;
+}
+.bigPriceDifference{
+    color: red;
+    font-weight: bold;
+}
+
+#copyTableBtn {
+    background-color: #444;
+    border-color: #555;
+}
+
+#copyTableBtn:hover {
+    background-color: #555;
+    border-color: #666;
+}
+
+#copyTableBtn i {
+    margin-right: 5px;
+}
+
+#toggleCalcColumns i {
+    margin-right: 5px;
+}
+
+.airport-btn {
+    width: 38px;
+}
+.airport-btn.btn-primary {
+    background-color: var(--primary-color);
+}
+.airport-btn.btn-info {
+    background-color: #0dcaf0;
+}
+.modal-content {
+    border: 1px solid #444;
+}
+
+/* Responsive table styles */
+@media (max-width: 768px) {
+    .table {
+        font-size: 14px;  /* Smaller font size on mobile */
+    }
+    
+    .table td, .table th {
+        padding: 0.5rem 0.3rem;  /* Reduce padding on mobile */
+    }
+
+    /* Make the table horizontally scrollable */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 1rem;
+        background-repeat: no-repeat;
+        background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+        background-position: 0 0, 100% 0, 0 0, 100% 0;
+        background-attachment: local, local, scroll, scroll;
+    }
+
+    /* Adjust input size on mobile */
+    .waitingFeeInput {
+        width: 50px;
+        padding: 0.25rem;
+    }
+
+    /* Adjust airport button size on mobile */
+    .airport-btn {
+        width: 32px;
+        height: 32px;
+        padding: 0.25rem;
+    }
+}
+
+/* Make sure table cells don't wrap awkwardly */
+.table td {
+    vertical-align: middle;
+}
+
+/* Ensure consistent number alignment */
+.table td:nth-child(2),
+.table td:nth-child(3),
+.table td:nth-child(4),
+.table td:nth-child(5),
+.table td:nth-child(6),
+.table td:nth-child(7),
+.table td:nth-child(8),
+.table td:nth-child(9) {
+    text-align: right;
+}
