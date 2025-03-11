@@ -11,6 +11,9 @@ body {
     color: #f8f9fa;
     border: 1px solid #333;
 }
+.card-header {
+    background-color: black;
+}
 .table {
     color: #f8f9fa;
     font-size: 15px;
