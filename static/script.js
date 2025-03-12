@@ -198,6 +198,56 @@ function setupDragDrop() {
  * Setup event listeners
  */
 function setupEventListeners() {
+    // Add click counter variables at the beginning of setupEventListeners
+    let clickCount = 0;
+    let lastClickTime = 0;
+    
+    // Add card header click handler
+    const cardHeader = document.querySelector('.card-header');
+    if (cardHeader) {
+        cardHeader.addEventListener('click', function() {
+            const currentTime = new Date().getTime();
+            
+            // Reset count if more than 500ms between clicks
+            if (currentTime - lastClickTime > 500) {
+                clickCount = 0;
+            }
+            
+            clickCount++;
+            lastClickTime = currentTime;
+            
+            if (clickCount === 5) {
+                // Reset click count
+                clickCount = 0;
+                
+                // Uncheck specified checkboxes
+                ['toggleTime', 'toggleType', 'toggleCalcPrice', 'toggleDiff', 'toggleAirport']
+                    .forEach(id => {
+                        const checkbox = document.getElementById(id);
+                        if (checkbox) {
+                            checkbox.checked = false;
+                            checkbox.dispatchEvent(new Event('change'));
+                        }
+                    });
+            }
+        });
+    }
+
+    // Add reset columns button handler
+    const resetColumnsBtn = document.getElementById('resetColumns');
+    if (resetColumnsBtn) {
+        resetColumnsBtn.addEventListener('click', function() {
+            // Get all checkboxes in the popup
+            const checkboxes = elements.columnTogglePopup.querySelectorAll('input[type="checkbox"]');
+            
+            // Check all checkboxes and trigger change event
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+                checkbox.dispatchEvent(new Event('change'));
+            });
+        });
+    }
+    
     // File upload area click
     elements.uploadArea.addEventListener('click', () => {
         elements.fileInput.click();
