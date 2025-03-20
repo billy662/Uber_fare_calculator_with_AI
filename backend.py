@@ -93,7 +93,7 @@ def generate(image_urls):
     # System instruction
     system_instruction = """
 I will provide screenshots of my Uber ride history in Hong Kong. I need you to extract the data from it summarizing the details of each trip and turn the data in JSON.
-The JSON should include the following columns and sort by time, from earliest to latest, and exclude rides that are canceled:
+The JSON should include the following columns and sort by time, from earliest to latest, and exclude rides that are canceled. If there is any duplicate rides in different images, show only once in the output:
 *Time of the ride
 *Duration (minutes): Numeric value (e.g., 20.43).
 *Distance (km):
