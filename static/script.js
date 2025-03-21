@@ -536,6 +536,13 @@ function copyTableToClipboard() {
 function displayResults(data) {
     elements.resultBody.innerHTML = '';
 
+    // Sort data by Time of the ride
+    data.sort((a, b) => {
+        const timeA = convertTimeToMinutes(a['Time of the ride']);
+        const timeB = convertTimeToMinutes(b['Time of the ride']);
+        return timeA - timeB;
+    });
+
     let count = 0; // number of rows
     let sumPrice = 0; // sum of price
     let sumDifference = 0; // sum of difference
@@ -595,6 +602,14 @@ function displayResults(data) {
 
     elements.loader.style.display = 'none';
     elements.resultTable.style.display = 'block';
+}
+
+/**
+ * Convert time string (HH:mm) to minutes for sorting
+ */
+function convertTimeToMinutes(timeStr) {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
 }
 
 /**

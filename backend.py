@@ -94,7 +94,7 @@ def generate(image_urls):
     system_instruction = """
 I will provide screenshots of my Uber ride history in Hong Kong. I need you to extract the data from it summarizing the details of each trip and turn the data in JSON.
 The JSON should include the following columns and sort by time, from earliest to latest, and exclude rides that are canceled. If there is any duplicate rides in different images, show only once in the output:
-*Time of the ride
+*Time of the ride: Please be aware that the times are shown in a 12-hour format in the images. '上午' indicates AM (morning) and '下午' indicates PM (afternoon).  Output the time in 24-hour format . For example, '上午 9:26' is 09:26 and '下午11:56' is 23:56.  Pay close attention to these AM/PM indicators.
 *Duration (minutes): Numeric value (e.g., 20.43).
 *Distance (km):
 *Surge (HK$): Amount of 加乘費用 or blank if none. Do not treat 通行費 as 加乘費用.
