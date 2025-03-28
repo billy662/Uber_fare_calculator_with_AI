@@ -51,9 +51,12 @@ def process_images():
         
         if not image_urls:
             return jsonify({'error': 'No valid images uploaded'}), 400
+
+        # Get the selected model choice from the form data
+        selected_model = request.form.get('modelChoice', 'Model1') # Default to Model1
         
-        # Process images using the backend module
-        result = backend.generate(image_urls)
+        # Process images using the backend module, passing the model choice
+        result = backend.generate(image_urls, selected_model)
         
         # Clean up - remove the session directory after processing
         shutil.rmtree(session_dir, ignore_errors=True)

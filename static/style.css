@@ -175,7 +175,7 @@ body {
     .table {
         font-size: 14px;  /* Smaller font size on mobile */
     }
-    
+
     .table td, .table th {
         padding: 0.5rem 0.3rem;  /* Reduce padding on mobile */
     }
@@ -220,4 +220,63 @@ body {
 .table td:nth-child(8),
 .table td:nth-child(9) {
     text-align: right;
+}
+
+/* Custom Toggle Switch Styles */
+.form-switch.form-switch-lg {
+  padding-left: 0; /* Remove default padding */
+  display: flex; /* Use flexbox for alignment */
+  align-items: center; /* Vertically center items */
+  min-height: 2rem; /* Adjust height */
+}
+
+.form-switch.form-switch-lg .form-check-input {
+  width: 3rem; /* Adjust width */
+  height: 1.5rem; /* Adjust height */
+  margin: 0 1rem; /* Add horizontal margin for spacing */
+  position: relative; /* Needed for flexbox layout */
+  margin-left: 1rem; /* Ensure space after first label */
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%280, 0, 0, 0.25%29'/%3e%3c/svg%3e");
+  background-position: left center;
+  border-radius: 3rem; /* Make it rounded */
+  transition: background-position 0.15s ease-in-out;
+}
+
+.form-switch.form-switch-lg .form-check-input:focus {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%2386b7fe'/%3e%3c/svg%3e");
+}
+
+.form-switch.form-switch-lg .form-check-input:checked {
+  background-position: right center;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+  background-color: #0d6efd; /* Bootstrap primary blue */
+  border-color: #0d6efd;
+}
+
+/* Optional: Style the label */
+.form-switch.form-switch-lg .form-check-label {
+  padding-top: 0.25rem; /* Align label vertically */
+  font-weight: bold;
+}
+
+/* Style for dark mode */
+[data-bs-theme="dark"] .form-switch.form-switch-lg .form-check-input {
+  background-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.25);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%28255, 255, 255, 0.25%29'/%3e%3c/svg%3e");
+}
+
+[data-bs-theme="dark"] .form-switch.form-switch-lg .form-check-input:focus {
+   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%2386b7fe'/%3e%3c/svg%3e"); /* Keep focus color */
+}
+
+[data-bs-theme="dark"] .form-switch.form-switch-lg .form-check-input:checked {
+  background-color: #0d6efd; /* Keep checked color */
+  border-color: #0d6efd;
+   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+}
+
+/* Ensure labels don't have extra margin interfering */
+.form-switch.form-switch-lg .form-check-label {
+  margin-bottom: 0; /* Override potential Bootstrap margins */
 }

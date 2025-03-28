@@ -28,6 +28,7 @@ class UberRide(BaseModel):
     airport_trip: str
 
 def create_session_with_retries():
+    """Creates a requests session with retry logic."""
     session = requests.Session()
     retries = Retry(
         total=3,
@@ -38,15 +39,16 @@ def create_session_with_retries():
     session.mount('https://', HTTPAdapter(max_retries=retries))
     return session
 
-def generate(image_urls):
+def generate(image_urls, selected_model="Model1"):
     """
-    Process Uber ride receipt images and extract structured data.
-    
+    Process Uber ride receipt images and extract structured data using the specified model.
+
     Args:
-        image_urls: List of image URLs or file paths to process
-        
+        image_urls: List of image URLs or file paths to process.
+        selected_model: The model choice ("Model1" or "Model2") from the frontend.
+
     Returns:
-        List of parsed UberRide objects
+        List of parsed UberRide objects or an error dictionary.
     """
     # Load environment variables from .env file
     load_dotenv()
@@ -60,8 +62,8 @@ def generate(image_urls):
     client = genai.Client(
         api_key=api_key,
     )
-    model = "gemini-2.0-flash"
-    
+
+    logger.info(f"Using model: {selected_model}") # Log the received model name
     # Prepare content parts
     content_parts = ["Please analyze these Uber ride receipts and create the requested table:"]
     
@@ -109,7 +111,7 @@ Please ensure the JSON accurately reflects the information in the screenshot. Sh
     try:
         # Send request with JSON configuration
         response = client.models.generate_content(
-            model=model,
+            model=selected_model, # Directly use the model name received from frontend
             contents=content_parts,
             config={
                 'response_mime_type': 'application/json',
