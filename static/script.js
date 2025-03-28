@@ -126,6 +126,7 @@ const columnMappings = {
 let selectedFiles = [];
 let currentRow = null;
 let airportModal = null;
+let startTime; // Variable to store the start time
 
 /**
  * Initialize the dark mode detection
@@ -441,6 +442,12 @@ function updateSubmitButton() {
  * Submit files to backend
  */
 async function submitFiles() {
+    startTime = performance.now(); // Start the timer
+    const responseTimeElement = document.getElementById('responseTime');
+    if (responseTimeElement) {
+        responseTimeElement.textContent = ''; // Clear previous time
+    }
+
     const validFiles = selectedFiles.filter(file => file !== null);
     if (validFiles.length === 0) return;
     
@@ -604,6 +611,14 @@ function displayResults(data) {
     
     // Initial summary row
     updateSummaryFooter(count, sumPrice, sumDifference);
+
+    // Stop timer and display elapsed time
+    const endTime = performance.now();
+    const elapsedTime = ((endTime - startTime) / 1000).toFixed(2); // Time in seconds
+    const responseTimeElement = document.getElementById('responseTime');
+    if (responseTimeElement) {
+        responseTimeElement.textContent = ` 處理時間:(${elapsedTime}s)`;
+    }
 
     elements.loader.style.display = 'none';
     elements.resultTable.style.display = 'block';
