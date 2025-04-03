@@ -134,9 +134,14 @@ body {
 .waitingFeeInput {
     width: 70px;
 }
-.bigPriceDifference{
+.table .bigPriceDifference{
     color: red;
     font-weight: bold;
+}
+
+.table-striped > tbody > tr.bigPriceDifferenceRow td {
+   color: #ff1d1d !important; 
+   font-weight: bold !important;
 }
 
 #copyTableBtn {

@@ -203,7 +203,7 @@ function setupEventListeners() {
     let clickCount = 0;
     let lastClickTime = 0;
     
-    // Add card header click handler
+    // Add card header click handler (Developer mode)
     const cardHeader = document.querySelector('.card-header');
     if (cardHeader) {
         cardHeader.addEventListener('click', function() {
@@ -216,20 +216,114 @@ function setupEventListeners() {
             
             clickCount++;
             lastClickTime = currentTime;
-            
+
             if (clickCount === 5) {
+                // Define sample data
+                const sampleData = [
+                    {
+                    "Airport trip?": "normal",
+                    "Distance (km)": 2.09,
+                    "Duration (minutes)": 7.97,
+                    "Price (HK$)": 50.12,
+                    "Surge (HK$)": "",
+                    "Time of the ride": "17:37",
+                    "Tip": "",
+                    "Type of ride": "的士(預定價錢)",
+                    "Waiting Fee?": ""
+                    },
+                    {
+                    "Airport trip?": "normal",
+                    "Distance (km)": 5.85,
+                    "Duration (minutes)": 12.63,
+                    "Price (HK$)": 111.78,
+                    "Surge (HK$)": "10.28",
+                    "Time of the ride": "17:50",
+                    "Tip": "10.0",
+                    "Type of ride": "的士(預定價錢)",
+                    "Waiting Fee?": ""
+                    },
+                    {
+                    "Airport trip?": "normal",
+                    "Distance (km)": 9.8,
+                    "Duration (minutes)": 19.18,
+                    "Price (HK$)": 90.55,
+                    "Surge (HK$)": "",
+                    "Time of the ride": "18:17",
+                    "Tip": "",
+                    "Type of ride": "的士(預定價錢)",
+                    "Waiting Fee?": ""
+                    },
+                    {
+                    "Airport trip?": "normal",
+                    "Distance (km)": 15.61,
+                    "Duration (minutes)": 33.5,
+                    "Price (HK$)": 175.3,
+                    "Surge (HK$)": "32.46",
+                    "Time of the ride": "18:34",
+                    "Tip": "",
+                    "Type of ride": "的士(預定價錢)",
+                    "Waiting Fee?": ""
+                    },
+                    {
+                    "Airport trip?": "normal",
+                    "Distance (km)": 14.84,
+                    "Duration (minutes)": 21.62,
+                    "Price (HK$)": 123.06,
+                    "Surge (HK$)": "",
+                    "Time of the ride": "20:40",
+                    "Tip": "",
+                    "Type of ride": "的士(預定價錢)",
+                    "Waiting Fee?": ""
+                    },
+                    {
+                    "Airport trip?": "normal",
+                    "Distance (km)": 11.5,
+                    "Duration (minutes)": 17.85,
+                    "Price (HK$)": 141.25,
+                    "Surge (HK$)": "",
+                    "Time of the ride": "21:18",
+                    "Tip": "",
+                    "Type of ride": "的士(預定價錢)",
+                    "Waiting Fee?": ""
+                    }
+                ];
+            
                 // Reset click count
                 clickCount = 0;
                 
-                // Uncheck specified checkboxes
-                ['toggleTime', 'toggleType', 'toggleCalcPrice', 'toggleDiff', 'toggleAirport']
-                    .forEach(id => {
-                        const checkbox = document.getElementById(id);
-                        if (checkbox) {
-                            checkbox.checked = false;
-                            checkbox.dispatchEvent(new Event('change'));
-                        }
+                // Check if the "Show Specific Columns" button already exists
+                if (!cardHeader.querySelector('.show-specific-cols-btn')) {
+                    // Create and append the "Show Specific Columns" button
+                    const resetColsButton = document.createElement('button');
+                    resetColsButton.textContent = 'Show Specific Columns';
+                    resetColsButton.className = 'btn btn-sm btn-warning ms-2 show-specific-cols-btn';
+                    resetColsButton.addEventListener('click', (event) => {
+                        event.stopPropagation(); // Prevent card header click event
+                        // Uncheck specified checkboxes
+                        ['toggleTime', 'toggleType', 'toggleCalcPrice', 'toggleDiff', 'toggleAirport']
+                            .forEach(id => {
+                                const checkbox = document.getElementById(id);
+                                if (checkbox) {
+                                    checkbox.checked = false;
+                                    checkbox.dispatchEvent(new Event('change'));
+                                }
+                            });
                     });
+                    cardHeader.appendChild(resetColsButton);
+                }
+
+                // Check if the "Show sample data" button already exists
+                if (!cardHeader.querySelector('.sample-data-btn')) {
+                    // Create and append the "Show sample data" button
+                    const sampleButton = document.createElement('button');
+                    sampleButton.textContent = 'Show sample data';
+                    sampleButton.className = 'btn btn-sm btn-info ms-2 sample-data-btn'; // Added ms-2 for margin
+                    sampleButton.addEventListener('click', (event) => {
+                        event.stopPropagation(); // Prevent card header click event from firing again
+                        displayResults(sampleData);
+                    });
+                    cardHeader.appendChild(sampleButton);
+                }
             }
         });
     }
@@ -592,7 +686,7 @@ function displayResults(data) {
             <td>${tip}</td>
             <td>${price}</td>
             <td class="calculatedPrice">${calculatedPrice}</td>
-            <td class="priceDifference ${parseFloat(difference) <= -5 ? 'bigPriceDifference' : ''}">${difference}</td>
+            <td class="priceDifference">${difference}</td>
             <td>
                 ${!['Comfort', 'UberXL', 'UberXXL', 'Black'].includes(rideType) && !rideType.startsWith('咪錶的士') ? `
                     <button class="btn btn-sm btn-outline-secondary airport-btn" data-type="normal">
@@ -603,6 +697,11 @@ function displayResults(data) {
         `;
 
         row.cells[0].dataset.rideType = rideType;
+
+        // Add class to row if difference is significant
+        if (parseFloat(difference) <= -15) {
+            row.classList.add('bigPriceDifferenceRow');
+        }
         
         elements.resultBody.appendChild(row);
 
@@ -698,7 +797,9 @@ function updateRowCalculation(row, duration, distance, surge, waitingFee, tip, p
     calculatedPriceCell.textContent = newCalculatedPrice;
     const newDifference = (price - newCalculatedPrice).toFixed(2);
     differenceCell.textContent = newDifference;
-    differenceCell.classList.toggle('bigPriceDifference', parseFloat(newDifference) <= -5);
+    
+    // Toggle row class based on the new difference
+    row.classList.toggle('bigPriceDifferenceRow', parseFloat(newDifference) <= -15);
 
     // Recalculate total summary
     recalculateTotalSummary();
