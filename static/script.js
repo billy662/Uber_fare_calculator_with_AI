@@ -490,6 +490,7 @@ async function submitFiles() {
             throw new Error(data.error);
         }
         
+        console.log('Received data:', JSON.stringify(data, null, 2));
         displayResults(data);
         
     } catch (error) {
