@@ -145,22 +145,8 @@ Please ensure the JSON accurately reflects the information in the screenshot. Sh
         
     except Exception as e:
         logger.error(f"Error generating content: {str(e)}")
-        
-        # Provide error message if there's an error
-        error_message = [
-            {
-                "Time of the ride": "",
-                "Duration (minutes)": 0,
-                "Distance (km)": 0,
-                "Surge (HK$)": "0",
-                "Waiting Fee?": "0",
-                "Tip": "0", 
-                "Price (HK$)": 0,
-                "Type of ride": ""
-            }
-        ]
-        
-        return error_message
+        # Return the actual error message
+        return {"error": f"An error occurred during processing: {str(e)}"}
 
 if __name__ == "__main__":
     # For testing in standalone mode
