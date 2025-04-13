@@ -707,6 +707,20 @@ function displayResults(data) {
         // Add event listener for waiting fee input if it exists
         setupWaitingFeeInput(row, duration, distance, surge, tip, price, rideType);
     });
+
+    // Initialize SortableJS on the table body
+    if (elements.resultBody.children.length > 0) { // Only initialize if there are rows
+        new Sortable(elements.resultBody, {
+            animation: 150, // ms, animation speed moving items when sorting, `0` — without animation
+            ghostClass: 'sortable-ghost', // Class name for the drop placeholder
+            chosenClass: 'sortable-chosen', // Class name for the chosen item
+            dragClass: 'sortable-drag', // Class name for the dragging item
+            onEnd: function (/**Event*/evt) {
+                // Recalculate summary if needed after reordering
+                recalculateTotalSummary(); 
+            },
+        });
+    }
     
     // Initial summary row
     updateSummaryFooter(count, sumPrice, sumDifference);
