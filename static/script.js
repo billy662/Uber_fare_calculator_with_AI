@@ -1,128 +1,8 @@
 // DOM Elements
 const elements = {};
 
-// Configuration
-const fareConfigs = {
-    'taxi': {
-        'normal': {
-            minCharge: 40.95,
-            baseFare: 15.5,
-            perMinPrice: 2.1,
-            perKmRates: [
-                { maxKm: 5, rate: 5.59 },
-                { maxKm: 10, rate: 6.79 },
-                { maxKm: 15, rate: 6.64 },
-                { maxKm: Infinity, rate: 5.39 }
-            ]
-        },
-        'fromAirport': {
-            minCharge: 42.95,
-            baseFare: 15.5,
-            perMinPrice: 2.1,
-            perKmRates: [
-                { maxKm: 5, rate: 5.87 },
-                { maxKm: 10, rate: 7.13 },
-                { maxKm: 15, rate: 6.64 },
-                { maxKm: Infinity, rate: 5.39 }
-            ]
-        },
-        'toAirport': {
-            minCharge: 40.95,
-            baseFare: 15.5,
-            perMinPrice: 2.1,
-            perKmRates: [
-                { maxKm: 5, rate: 5.59 },
-                { maxKm: 10, rate: 6.79 },
-                { maxKm: 15, rate: 6.31 },
-                { maxKm: Infinity, rate: 5.12 }
-            ]
-        }
-    },
-    'uberx': {
-        'normal': {
-            minCharge: 40.95,
-            baseFare: 18,
-            perMinPrice: 2.04,
-            perKmRates: [
-                { maxKm: 5, rate: 4.73 },
-                { maxKm: 10, rate: 5.23 },
-                { maxKm: 15, rate: 5.63 },
-                { maxKm: Infinity, rate: 4.88 }
-            ]
-        },
-        'fromAirport': {
-            minCharge: 42.95,
-            baseFare: 18,
-            perMinPrice: 2.04,
-            perKmRates: [
-                { maxKm: 5, rate: 4.97 },
-                { maxKm: 10, rate: 5.49 },
-                { maxKm: 15, rate: 5.63 },
-                { maxKm: Infinity, rate: 4.88 }
-            ]
-        },
-        'toAirport': {
-            minCharge: 40.95,
-            baseFare: 18,
-            perMinPrice: 2.04,
-            perKmRates: [
-                { maxKm: 5, rate: 4.73 },
-                { maxKm: 10, rate: 5.23 },
-                { maxKm: 15, rate: 5.35 },
-                { maxKm: Infinity, rate: 4.64 }
-            ]
-        }
-    },
-    'comfort': {
-        'normal': {
-            minCharge: 56,
-            baseFare: 26.85,
-            perMinPrice: 1.6,
-            perKmPrice: 6.29
-        }
-    },
-    'uberxl': {
-        'normal': {
-            minCharge: 75,
-            baseFare: 40,
-            perMinPrice: 1.9,
-            perKmPrice: 8.68
-        }
-    },
-    'uberxxl': {
-        'normal': {
-            minCharge: 80,
-            baseFare: 45,
-            perMinPrice: 1.9,
-            perKmPrice: 9.22
-        }
-    },
-    'black': {
-        'normal': {
-            minCharge: 90,
-            baseFare: 45,
-            perMinPrice: 1.9,
-            perKmPrice: 9.22
-        }
-    }
-};
-
-// Column visibility mappings
-const columnMappings = {
-    'toggleTime': 0,
-    'toggleType': 1,
-    'toggleDuration': 2,
-    'toggleDistance': 3,
-    'toggleSurge': 4,
-    'toggleWaitingFee': 5,
-    'toggleTip': 6,
-    'togglePrice': 7,
-    'toggleCalcPrice': 8,
-    'toggleDiff': 9,
-    'toggleAirport': 10
-};
-
 // App state
+// Configuration data (fareConfigs, columnMappings) is now in static/config.js
 let selectedFiles = [];
 let currentRow = null;
 let airportModal = null;
@@ -200,134 +80,8 @@ function setupDragDrop() {
  * Setup event listeners
  */
 function setupEventListeners() {
-    // Add click counter variables at the beginning of setupEventListeners
-    let clickCount = 0;
-    let lastClickTime = 0;
-    
-    // Add card header click handler (Developer mode)
-    const cardHeader = document.querySelector('.card-header');
-    if (cardHeader) {
-        cardHeader.addEventListener('click', function() {
-            const currentTime = new Date().getTime();
-            
-            // Reset count if more than 500ms between clicks
-            if (currentTime - lastClickTime > 500) {
-                clickCount = 0;
-            }
-            
-            clickCount++;
-            lastClickTime = currentTime;
-
-            if (clickCount === 5) {
-                // Define sample data
-                const sampleData = [
-                    {
-                    "Airport trip?": "normal",
-                    "Distance (km)": 2.09,
-                    "Duration (minutes)": 7.97,
-                    "Price (HK$)": 50.12,
-                    "Surge (HK$)": "",
-                    "Time of the ride": "17:37",
-                    "Tip": "",
-                    "Type of ride": "的士(預定價錢)",
-                    "Waiting Fee?": ""
-                    },
-                    {
-                    "Airport trip?": "normal",
-                    "Distance (km)": 5.85,
-                    "Duration (minutes)": 12.63,
-                    "Price (HK$)": 111.78,
-                    "Surge (HK$)": "10.28",
-                    "Time of the ride": "17:50",
-                    "Tip": "10.0",
-                    "Type of ride": "的士(預定價錢)",
-                    "Waiting Fee?": ""
-                    },
-                    {
-                    "Airport trip?": "normal",
-                    "Distance (km)": 9.8,
-                    "Duration (minutes)": 19.18,
-                    "Price (HK$)": 90.55,
-                    "Surge (HK$)": "",
-                    "Time of the ride": "18:17",
-                    "Tip": "",
-                    "Type of ride": "的士(預定價錢)",
-                    "Waiting Fee?": ""
-                    },
-                    {
-                    "Airport trip?": "normal",
-                    "Distance (km)": 15.61,
-                    "Duration (minutes)": 33.5,
-                    "Price (HK$)": 175.3,
-                    "Surge (HK$)": "32.46",
-                    "Time of the ride": "18:34",
-                    "Tip": "",
-                    "Type of ride": "的士(預定價錢)",
-                    "Waiting Fee?": ""
-                    },
-                    {
-                    "Airport trip?": "normal",
-                    "Distance (km)": 14.84,
-                    "Duration (minutes)": 21.62,
-                    "Price (HK$)": 123.06,
-                    "Surge (HK$)": "",
-                    "Time of the ride": "20:40",
-                    "Tip": "",
-                    "Type of ride": "的士(預定價錢)",
-                    "Waiting Fee?": ""
-                    },
-                    {
-                    "Airport trip?": "normal",
-                    "Distance (km)": 11.5,
-                    "Duration (minutes)": 17.85,
-                    "Price (HK$)": 141.25,
-                    "Surge (HK$)": "",
-                    "Time of the ride": "21:18",
-                    "Tip": "",
-                    "Type of ride": "的士(預定價錢)",
-                    "Waiting Fee?": ""
-                    }
-                ];
-            
-                // Reset click count
-                clickCount = 0;
-                
-                // Check if the "Show Specific Columns" button already exists
-                if (!cardHeader.querySelector('.show-specific-cols-btn')) {
-                    // Create and append the "Show Specific Columns" button
-                    const resetColsButton = document.createElement('button');
-                    resetColsButton.textContent = 'Show Specific Columns';
-                    resetColsButton.className = 'btn btn-sm btn-warning ms-2 show-specific-cols-btn';
-                    resetColsButton.addEventListener('click', (event) => {
-                        event.stopPropagation(); // Prevent card header click event
-                        // Uncheck specified checkboxes
-                        ['toggleTime', 'toggleType', 'toggleCalcPrice', 'toggleDiff', 'toggleAirport']
-                            .forEach(id => {
-                                const checkbox = document.getElementById(id);
-                                if (checkbox) {
-                                    checkbox.checked = false;
-                                    checkbox.dispatchEvent(new Event('change'));
-                                }
-                            });
-                    });
-                    cardHeader.appendChild(resetColsButton);
-                }
-
-                // Check if the "Show sample data" button already exists
-                if (!cardHeader.querySelector('.sample-data-btn')) {
-                    // Create and append the "Show sample data" button
-                    const sampleButton = document.createElement('button');
-                    sampleButton.textContent = 'Show sample data';
-                    sampleButton.className = 'btn btn-sm btn-info ms-2 sample-data-btn'; // Added ms-2 for margin
-                    sampleButton.addEventListener('click', (event) => {
-                        event.stopPropagation(); // Prevent card header click event from firing again
-                        displayResults(sampleData);
-                    });
-                    cardHeader.appendChild(sampleButton);
-                }
-            }
-        });
-    }
+    // Setup developer mode (5 clicks on header)
+    setupDeveloperMode();
 
     // Add reset columns button handler
     const resetColumnsBtn = document.getElementById('resetColumns');
@@ -343,35 +97,21 @@ function setupEventListeners() {
             });
         });
     }
-    
-    // File upload area click
-    elements.uploadArea.addEventListener('click', () => {
-        elements.fileInput.click();
-    });
-    
-    // File input change
-    elements.fileInput.addEventListener('change', function() {
-        handleFiles(this.files);
-    });
-    
-    // Clear all button
-    elements.clearAllBtn.addEventListener('click', function() {
-        selectedFiles = [];
-        elements.imagePreview.innerHTML = '';
-        updateSubmitButton();
-        // Reset sortable state on clear
-        if (sortableInstance) {
-            sortableInstance.destroy();
-            sortableInstance = null;
-        }
-        elements.toggleSortBtn.disabled = true;
-        elements.toggleSortBtn.innerHTML = '<i class="bi bi-arrow-down-up"></i> 開啟手動排序';
-        elements.resultBody.classList.remove('not-sortable'); 
-    });
+
+    // Setup file upload related listeners
+    setupFileUploadListeners();
     
     // Submit button
     elements.submitBtn.addEventListener('click', submitFiles);
-    
+
+    // Setup listeners related to the results table
+    setupResultTableListeners();
+}
+
+/**
+ * Setup listeners related to the results table (copy, column toggle, airport, sort)
+ */
+function setupResultTableListeners() {
     // Copy table button
     elements.copyTableBtn.addEventListener('click', copyTableToClipboard);
     
@@ -384,13 +124,21 @@ function setupEventListeners() {
     
     // Close popup when clicking outside
     document.addEventListener('click', function(e) {
+        // Close column toggle popup
         if (!elements.columnTogglePopup.contains(e.target) && 
             e.target !== elements.toggleCalcColumns) {
             elements.columnTogglePopup.style.display = 'none';
         }
+
+        // Handle airport button clicks within the table body
+        if (e.target.closest('.airport-btn')) {
+            const btn = e.target.closest('.airport-btn');
+            currentRow = btn.closest('tr');
+            airportModal.show();
+        }
     });
     
-    // Airport buttons
+    // Airport modal buttons
     elements.toAirportBtn.addEventListener('click', function() {
         updateAirportType('toAirport', '往機場');
     });
@@ -401,15 +149,6 @@ function setupEventListeners() {
     
     elements.resetAirportBtn.addEventListener('click', function() {
         updateAirportType('normal', '');
-    });
-    
-    // Airport button in table rows
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.airport-btn')) {
-            const btn = e.target.closest('.airport-btn');
-            currentRow = btn.closest('tr');
-            airportModal.show();
-        }
     });
     
     // Column toggle checkboxes
@@ -438,6 +177,168 @@ function setupEventListeners() {
             });
             this.innerHTML = '<i class="bi bi-arrow-down-up"></i> 關閉手動排序';
             elements.resultBody.classList.remove('not-sortable'); // Remove class
+        }
+    });
+}
+
+/**
+ * Setup file upload related event listeners
+ */
+function setupFileUploadListeners() {
+    // File upload area click
+    elements.uploadArea.addEventListener('click', () => {
+        elements.fileInput.click();
+    });
+    
+    // File input change
+    elements.fileInput.addEventListener('change', function() {
+        handleFiles(this.files);
+    });
+    
+    // Clear all button
+    elements.clearAllBtn.addEventListener('click', function() {
+        selectedFiles = [];
+        elements.imagePreview.innerHTML = '';
+        updateSubmitButton();
+        // Reset sortable state on clear
+        if (sortableInstance) {
+            sortableInstance.destroy();
+            sortableInstance = null;
+        }
+        elements.toggleSortBtn.disabled = true;
+        elements.toggleSortBtn.innerHTML = '<i class="bi bi-arrow-down-up"></i> 開啟手動排序';
+        elements.resultBody.classList.remove('not-sortable'); 
+    });
+}
+
+/**
+ * Setup developer mode (5 clicks on header to show sample data/column buttons)
+ */
+function setupDeveloperMode() {
+    const cardHeader = document.querySelector('.card-header');
+    if (!cardHeader) return;
+
+    let clickCount = 0;
+    let lastClickTime = 0;
+
+    cardHeader.addEventListener('click', function() {
+        const currentTime = new Date().getTime();
+        
+        // Reset count if more than 500ms between clicks
+        if (currentTime - lastClickTime > 500) {
+            clickCount = 0;
+        }
+        
+        clickCount++;
+        lastClickTime = currentTime;
+
+        if (clickCount === 5) {
+            // Define sample data
+            const sampleData = [
+                {
+                "Airport trip?": "normal",
+                "Distance (km)": 2.09,
+                "Duration (minutes)": 7.97,
+                "Price (HK$)": 50.12,
+                "Surge (HK$)": "",
+                "Time of the ride": "17:37",
+                "Tip": "",
+                "Type of ride": "的士(預定價錢)",
+                "Waiting Fee?": ""
+                },
+                {
+                "Airport trip?": "normal",
+                "Distance (km)": 5.85,
+                "Duration (minutes)": 12.63,
+                "Price (HK$)": 111.78,
+                "Surge (HK$)": "10.28",
+                "Time of the ride": "17:50",
+                "Tip": "10.0",
+                "Type of ride": "的士(預定價錢)",
+                "Waiting Fee?": ""
+                },
+                {
+                "Airport trip?": "normal",
+                "Distance (km)": 9.8,
+                "Duration (minutes)": 19.18,
+                "Price (HK$)": 90.55,
+                "Surge (HK$)": "",
+                "Time of the ride": "18:17",
+                "Tip": "",
+                "Type of ride": "的士(預定價錢)",
+                "Waiting Fee?": ""
+                },
+                {
+                "Airport trip?": "normal",
+                "Distance (km)": 15.61,
+                "Duration (minutes)": 33.5,
+                "Price (HK$)": 175.3,
+                "Surge (HK$)": "32.46",
+                "Time of the ride": "18:34",
+                "Tip": "",
+                "Type of ride": "的士(預定價錢)",
+                "Waiting Fee?": ""
+                },
+                {
+                "Airport trip?": "normal",
+                "Distance (km)": 14.84,
+                "Duration (minutes)": 21.62,
+                "Price (HK$)": 123.06,
+                "Surge (HK$)": "",
+                "Time of the ride": "20:40",
+                "Tip": "",
+                "Type of ride": "的士(預定價錢)",
+                "Waiting Fee?": ""
+                },
+                {
+                "Airport trip?": "normal",
+                "Distance (km)": 11.5,
+                "Duration (minutes)": 17.85,
+                "Price (HK$)": 141.25,
+                "Surge (HK$)": "",
+                "Time of the ride": "21:18",
+                "Tip": "",
+                "Type of ride": "的士(預定價錢)",
+                "Waiting Fee?": ""
+                }
+            ];
+        
+            // Reset click count
+            clickCount = 0;
+            
+            // Check if the "Show Specific Columns" button already exists
+            if (!cardHeader.querySelector('.show-specific-cols-btn')) {
+                // Create and append the "Show Specific Columns" button
+                const resetColsButton = document.createElement('button');
+                resetColsButton.textContent = 'Show Specific Columns';
+                resetColsButton.className = 'btn btn-sm btn-warning ms-2 show-specific-cols-btn';
+                resetColsButton.addEventListener('click', (event) => {
+                    event.stopPropagation(); // Prevent card header click event
+                    // Uncheck specified checkboxes
+                    ['toggleTime', 'toggleType', 'toggleCalcPrice', 'toggleDiff', 'toggleAirport']
+                        .forEach(id => {
+                            const checkbox = document.getElementById(id);
+                            if (checkbox) {
+                                checkbox.checked = false;
+                                checkbox.dispatchEvent(new Event('change'));
+                            }
+                        });
+                });
+                cardHeader.appendChild(resetColsButton);
+            }
+
+            // Check if the "Show sample data" button already exists
+            if (!cardHeader.querySelector('.sample-data-btn')) {
+                // Create and append the "Show sample data" button
+                const sampleButton = document.createElement('button');
+                sampleButton.textContent = 'Show sample data';
+                sampleButton.className = 'btn btn-sm btn-info ms-2 sample-data-btn'; // Added ms-2 for margin
+                sampleButton.addEventListener('click', (event) => {
+                    event.stopPropagation(); // Prevent card header click event from firing again
+                    displayResults(sampleData);
+                });
+                cardHeader.appendChild(sampleButton);
+            }
         }
     });
 }
@@ -682,10 +583,66 @@ function copyTableToClipboard() {
 }
 
 /**
+ * Creates a table row element for a single result item.
+ * @param {object} item - The result item data.
+ * @returns {object} An object containing the created row element, the original price, and the calculated difference.
+ */
+function createResultRow(item) {
+    const duration = item['Duration (minutes)'];
+    const distance = item['Distance (km)'];
+    const surge = item['Surge (HK$)'];
+    const tip = item['Tip'];
+    const price = item['Price (HK$)'];
+    const rideType = item['Type of ride'];
+
+    const row = document.createElement('tr');
+    
+    let calculatedPrice = calculatePrice(duration, distance, surge, 0, tip, "normal", rideType);
+    let difference = (price - calculatedPrice).toFixed(2);
+    if (rideType.startsWith('咪錶的士')) {
+        calculatedPrice = price; // For metered taxi, calculated price is the actual price
+        difference = 0;
+    }
+
+    row.innerHTML = `
+        <td>${item['Time of the ride']}</td>
+        <td>${rideType}</td>
+        <td>${duration}</td>
+        <td>${distance}</td>
+        <td>${surge || ''}</td>
+        <td>${item['Waiting Fee?'] === 'X' ? `<input type="number" class="waitingFeeInput" step="0.01" min="0" max="100"/>` : item['Waiting Fee?'] || ''}</td>
+        <td>${tip || ''}</td>
+        <td>${price}</td>
+        <td class="calculatedPrice">${calculatedPrice}</td>
+        <td class="priceDifference">${difference}</td>
+        <td>
+            ${!['Comfort', 'UberXL', 'UberXXL', 'Black'].includes(rideType) && !rideType.startsWith('咪錶的士') ? `
+                <button class="btn btn-sm btn-outline-secondary airport-btn" data-type="normal">
+                    <i class="bi bi-airplane"></i>
+                </button>
+            ` : ''}
+        </td>
+    `;
+
+    row.cells[0].dataset.rideType = rideType; // Store ride type for later use
+
+    // Add class to row if difference is significant
+    if (parseFloat(difference) <= -15) {
+        row.classList.add('bigPriceDifferenceRow');
+    }
+
+    // Add event listener for waiting fee input if it exists
+    setupWaitingFeeInput(row, duration, distance, surge, tip, price, rideType);
+
+    return { row, price, difference };
+}
+
+
+/**
  * Display results in the table
  */
 function displayResults(data) {
-    elements.resultBody.innerHTML = '';
+    elements.resultBody.innerHTML = ''; // Clear previous results
 
     // Sort data by Time of the ride
     data.sort((a, b) => {
@@ -694,62 +651,14 @@ function displayResults(data) {
         return timeA - timeB;
     });
 
-    let count = 0; // number of rows
-    let sumPrice = 0; // sum of price
-    let sumDifference = 0; // sum of difference
+    let totalSumPrice = 0; 
+    let totalSumDifference = 0; 
     
     data.forEach(item => {
-        count++;
-
-        const duration = item['Duration (minutes)'];
-        const distance = item['Distance (km)'];
-        const surge = item['Surge (HK$)'];
-        const tip = item['Tip'];
-        const price = item['Price (HK$)'];
-        const rideType = item['Type of ride'];
-
-        const row = document.createElement('tr');
-        sumPrice += price;
-        
-        let calculatedPrice = calculatePrice(duration, distance, surge, 0, tip, "normal", rideType);
-        let difference = (price - calculatedPrice).toFixed(2);
-        if (rideType.startsWith('咪錶的士')) {
-            calculatedPrice = price;
-            difference = 0;
-        }
-        sumDifference += parseFloat(difference);
-
-        row.innerHTML = `
-            <td>${item['Time of the ride']}</td>
-            <td>${rideType}</td>
-            <td>${duration}</td>
-            <td>${distance}</td>
-            <td>${surge || ''}</td>
-            <td>${item['Waiting Fee?'] === 'X' ? `<input type="number" class="waitingFeeInput" step="0.01" min="0" max="100"/>` : item['Waiting Fee?'] || ''}</td>
-            <td>${tip}</td>
-            <td>${price}</td>
-            <td class="calculatedPrice">${calculatedPrice}</td>
-            <td class="priceDifference">${difference}</td>
-            <td>
-                ${!['Comfort', 'UberXL', 'UberXXL', 'Black'].includes(rideType) && !rideType.startsWith('咪錶的士') ? `
-                    <button class="btn btn-sm btn-outline-secondary airport-btn" data-type="normal">
-                        <i class="bi bi-airplane"></i>
-                    </button>
-                ` : ''}
-            </td>
-        `;
-
-        row.cells[0].dataset.rideType = rideType;
-
-        // Add class to row if difference is significant
-        if (parseFloat(difference) <= -15) {
-            row.classList.add('bigPriceDifferenceRow');
-        }
-        
+        const { row, price, difference } = createResultRow(item);
         elements.resultBody.appendChild(row);
-
-        // Add event listener for waiting fee input if it exists
-        setupWaitingFeeInput(row, duration, distance, surge, tip, price, rideType);
+        totalSumPrice += price;
+        totalSumDifference += parseFloat(difference);
     });
 
     // Initialize SortableJS on the table body
@@ -787,7 +696,7 @@ function displayResults(data) {
     }
     
     // Initial summary row
-    updateSummaryFooter(count, sumPrice, sumDifference);
+    updateSummaryFooter(data.length, totalSumPrice, totalSumDifference);
 
     // Stop timer and display elapsed time
     const endTime = performance.now();
@@ -960,6 +869,43 @@ function updateAirportButtonStyle(row, airportType) {
 }
 
 /**
+ * Determines the service type, commission rate, and pet fee based on the ride type string.
+ * @param {string} rideType - The type of ride (e.g., 'UberX', '的士(預定價錢)').
+ * @returns {object} An object containing serviceType, commission, and petFee.
+ */
+function getServiceDetails(rideType) {
+    let serviceType = 'taxi'; // default
+    let commission = 0.9;   // default
+    let petFee = 0;         // default
+
+    if (rideType) {
+        const rideTypeLower = rideType.toLowerCase();
+        if (rideTypeLower.includes('uber pet')) {
+            serviceType = 'uberx';
+            commission = 0.73;
+            petFee = 20;
+        } else if (rideTypeLower.includes('uberxxl')) {
+            serviceType = 'uberxxl';
+            commission = 0.7;
+        } else if (rideTypeLower.includes('uberxl')) {
+            serviceType = 'uberxl';
+            commission = 0.7;
+        } else if (rideTypeLower.includes('uberx')) { // Must come after uberxl/xxl/pet
+            serviceType = 'uberx';
+            commission = 0.73;
+        } else if (rideTypeLower.includes('comfort')) {
+            serviceType = 'comfort';
+            commission = 0.7;
+        } else if (rideTypeLower.includes('black')) {
+            serviceType = 'black';
+            commission = 0.7;
+        }
+        // 'taxi' remains the default if none of the above match
+    }
+    return { serviceType, commission, petFee };
+}
+
+/**
  * Calculate the price based on ride details
  */
 function calculatePrice(duration, distance, surge, waitingFee = 0, tip, airportTrip, rideType) {
@@ -970,36 +916,10 @@ function calculatePrice(duration, distance, surge, waitingFee = 0, tip, airportT
     waitingFee = parseFloat(waitingFee) || 0;
     tip = parseFloat(tip) || 0;
     
-    let serviceType = 'taxi'; // default to taxi
-    let commission = 0.9;
-    let petFee = 0;
+    // Get service details based on ride type
+    const { serviceType, commission, petFee } = getServiceDetails(rideType);
 
-    // Determine service type and commission based on ride type
-    if (rideType) {
-        const rideTypeLower = rideType.toLowerCase();
-        if (rideTypeLower.includes('uber pet')) {
-            serviceType = 'uberx';
-            commission = 0.73;
-            petFee = 20; // Add $20 for Uber Pet rides
-        } else if (rideTypeLower.includes('uberxxl')) {
-            serviceType = 'uberxxl';
-            commission = 0.7;
-        } else if (rideTypeLower.includes('uberxl')) {
-            serviceType = 'uberxl';
-            commission = 0.7;
-        } else if (rideTypeLower.includes('uberx')) {
-            serviceType = 'uberx';
-            commission = 0.73;
-        } else if (rideTypeLower.includes('comfort')) {
-            serviceType = 'comfort';
-            commission = 0.7;
-        } else if (rideTypeLower.includes('black')) {
-            serviceType = 'black';
-            commission = 0.7;
-        }
-    }
-
-    // For fixed-rate services, always use 'normal' config regardless of airport status
+    // Determine if airport-specific pricing applies (only for taxi and uberx)
     const useAirportTrip = ['taxi', 'uberx'].includes(serviceType) ? airportTrip : 'normal';
     
     // Safety check for config existence
