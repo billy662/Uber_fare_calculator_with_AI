@@ -95,7 +95,7 @@ def generate(image_urls, selected_model="Model1"):
     # System instruction
     system_instruction = """
 I will provide screenshots of my Uber ride history in Hong Kong. I need you to extract the data from it summarizing the details of each trip and turn the data in JSON.
-The JSON should include the following columns and sort by time, from earliest to latest, and exclude rides that are canceled. If there is any duplicate rides in different images, show only once in the output:
+The JSON should include the following columns and sort by time, from earliest to latest(be aware of AM/PM and 上午/下午), and exclude rides that are canceled. If there is any duplicate rides in different images, show only once in the output:
 *Time of the ride: Please be aware that the times are shown in a 12-hour format in the images. '上午' indicates AM (morning) and '下午' indicates PM (afternoon).  Output the time in 24-hour format . For example, '上午 9:26' is 09:26 and '下午11:56' is 23:56.  Pay close attention to these AM/PM indicators.
 *Duration (minutes): Numeric value (e.g., 20.43).
 *Distance (km):
@@ -104,7 +104,7 @@ The JSON should include the following columns and sort by time, from earliest to
 *Tip: If within the ride details, there is a text "貼士", the amount next to it represents the tip. If the trip includes tip, output the amount of the tip, otherwise leave the output blank.
 *Price (HK$): 
 *Type of ride: Usually "的士(預定價錢)", "咪錶的士" , "咪錶的士(乘客八五折)", "UberX", "Uber Pet", "Comfort", "UberXL", "UberXXL" or "Black"
-*Airport trip?: You need to identify trips that are starting or ending in Chek Lap Kok(赤鱲角). In the little maps show in the images, the green circle represents the trip starting point and the red circle represents ending point. You can also look for hints below the mini map, the first address represents the trip starting point and the second address represents the trip ending point. Output "normal" for non Chek Lap Kok related trips, "fromAirport" for trips staring from Chek Lap Kok, "toAirport" for trips ending in Chek Lap Kok. Please make sure this output is super accurate.
+Please make sure this output is super accurate.
 Please ensure the JSON accurately reflects the information in the screenshot. Show the JSON only.
 """
     
@@ -137,8 +137,7 @@ Please ensure the JSON accurately reflects the information in the screenshot. Sh
                 "Waiting Fee?": ride.waiting_fee if ride.waiting_fee else "",
                 "Tip": str(ride.tip) if ride.tip is not None else "",
                 "Price (HK$)": ride.price_hkd,
-                "Type of ride": ride.type_of_ride,
-                "Airport trip?": ride.airport_trip
+                "Type of ride": ride.type_of_ride
             }
             result.append(formatted_ride)
         
@@ -157,8 +156,7 @@ Please ensure the JSON accurately reflects the information in the screenshot. Sh
                 "Waiting Fee?": "0",
                 "Tip": "0", 
                 "Price (HK$)": 0,
-                "Type of ride": "",
-                "Airport trip?": "",
+                "Type of ride": ""
             }
         ]
         

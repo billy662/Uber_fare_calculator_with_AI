@@ -662,13 +662,12 @@ function displayResults(data) {
         const surge = item['Surge (HK$)'];
         const tip = item['Tip'];
         const price = item['Price (HK$)'];
-        const airportTrip = item['Airport trip?'];
         const rideType = item['Type of ride'];
 
         const row = document.createElement('tr');
         sumPrice += price;
         
-        let calculatedPrice = calculatePrice(duration, distance, surge, 0, tip, airportTrip, rideType);
+        let calculatedPrice = calculatePrice(duration, distance, surge, 0, tip, "normal", rideType);
         let difference = (price - calculatedPrice).toFixed(2);
         if (rideType.startsWith('咪錶的士')) {
             calculatedPrice = price;
