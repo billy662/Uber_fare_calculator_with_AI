@@ -109,6 +109,10 @@ Please ensure the JSON accurately reflects the information in the screenshot. Sh
 """
     
     try:
+        # --- INTENTIONAL ERROR FOR TESTING ---
+        #raise ValueError("Intentional test error")
+        # ------------------------------------
+
         # Send request with JSON configuration
         response = client.models.generate_content(
             model=selected_model, # Directly use the model name received from frontend
