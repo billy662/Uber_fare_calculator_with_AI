@@ -126,6 +126,7 @@ const columnMappings = {
 let selectedFiles = [];
 let currentRow = null;
 let airportModal = null;
+let sortableInstance = null; // To hold the SortableJS instance
 let startTime; // Variable to store the start time
 
 /**
@@ -153,8 +154,8 @@ function initDOMElements() {
         'uploadArea', 'fileInput', 'imagePreview', 'submitBtn', 
         'loader', 'resultTable', 'resultBody', 'resultFooter', 
         'errorAlert', 'toggleCalcColumns', 'columnTogglePopup', 
-        'clearAllBtn', 'copyTableBtn', 'toAirportBtn', 
-        'fromAirportBtn', 'resetAirportBtn', 'noticeBox'
+        'clearAllBtn', 'copyTableBtn', 'toggleSortBtn', // Added toggleSortBtn
+        'toAirportBtn', 'fromAirportBtn', 'resetAirportBtn', 'noticeBox'
     ];
     
     elementIds.forEach(id => {
@@ -358,6 +359,14 @@ function setupEventListeners() {
         selectedFiles = [];
         elements.imagePreview.innerHTML = '';
         updateSubmitButton();
+        // Reset sortable state on clear
+        if (sortableInstance) {
+            sortableInstance.destroy();
+            sortableInstance = null;
+        }
+        elements.toggleSortBtn.disabled = true;
+        elements.toggleSortBtn.innerHTML = '<i class="bi bi-arrow-down-up"></i> 開啟手動排序';
+        elements.resultBody.classList.remove('not-sortable'); 
     });
     
     // Submit button
@@ -405,6 +414,32 @@ function setupEventListeners() {
     
     // Column toggle checkboxes
     setupColumnToggleCheckboxes();
+
+    // Toggle Sortable button listener
+    elements.toggleSortBtn.addEventListener('click', function() {
+        if (elements.resultBody.children.length === 0) return; // Do nothing if table is empty
+
+        if (sortableInstance) {
+            // If currently sortable, destroy it
+            sortableInstance.destroy();
+            sortableInstance = null;
+            this.innerHTML = '<i class="bi bi-arrow-down-up"></i> 開啟手動排序';
+            elements.resultBody.classList.add('not-sortable'); // Add class for visual feedback (optional)
+        } else {
+            // If not sortable, initialize it
+            sortableInstance = new Sortable(elements.resultBody, {
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                onEnd: function () {
+                    recalculateTotalSummary(); 
+                },
+            });
+            this.innerHTML = '<i class="bi bi-arrow-down-up"></i> 關閉手動排序';
+            elements.resultBody.classList.remove('not-sortable'); // Remove class
+        }
+    });
 }
 
 /**
@@ -536,6 +571,15 @@ function updateSubmitButton() {
  * Submit files to backend
  */
 async function submitFiles() {
+    // Reset sortable state before submission
+    if (sortableInstance) {
+        sortableInstance.destroy();
+        sortableInstance = null;
+    }
+    elements.toggleSortBtn.disabled = true;
+    elements.toggleSortBtn.innerHTML = '<i class="bi bi-arrow-down-up"></i> 開啟手動排序';
+    elements.resultBody.classList.remove('not-sortable');
+
     startTime = performance.now(); // Start the timer
     const responseTimeElement = document.getElementById('responseTime');
     if (responseTimeElement) {
@@ -710,7 +754,12 @@ function displayResults(data) {
 
     // Initialize SortableJS on the table body
     if (elements.resultBody.children.length > 0) { // Only initialize if there are rows
-        new Sortable(elements.resultBody, {
+        // Destroy previous instance if exists
+        if (sortableInstance) {
+            sortableInstance.destroy();
+            sortableInstance = null;
+        }
+        sortableInstance = new Sortable(elements.resultBody, { // Assign to variable
             animation: 150, // ms, animation speed moving items when sorting, `0` — without animation
             ghostClass: 'sortable-ghost', // Class name for the drop placeholder
             chosenClass: 'sortable-chosen', // Class name for the chosen item
@@ -720,6 +769,21 @@ function displayResults(data) {
                 recalculateTotalSummary(); 
             },
         });
+
+        // NEW: Disable sorting by default
+        if (sortableInstance) {
+            sortableInstance.destroy(); // Destroy the instance created above
+            sortableInstance = null;
+        }
+        elements.toggleSortBtn.disabled = false;
+        elements.toggleSortBtn.innerHTML = '<i class="bi bi-arrow-down-up"></i> 開啟手動排序';
+        elements.resultBody.classList.add('not-sortable'); // Add class to indicate disabled state
+
+    } else {
+        // Disable button if no rows
+        elements.toggleSortBtn.disabled = true;
+        elements.toggleSortBtn.innerHTML = '<i class="bi bi-arrow-down-up"></i> 開啟手動排序';
+        elements.resultBody.classList.remove('not-sortable'); // Ensure class is removed if no rows
     }
     
     // Initial summary row
