@@ -509,7 +509,7 @@ async function submitFiles() {
 
         // Get selected model name from toggle
         const modelToggle = document.getElementById('modelToggle');
-        const selectedModel = modelToggle.checked ? "gemini-2.5-pro-exp-03-25" : "gemini-2.0-flash"; // Send actual model name
+        const selectedModel = modelToggle.checked ? "gemini-2.5-pro-exp-03-25" : "gemini-2.5-flash-preview-04-17"; // Send actual model name
         formData.append('modelChoice', selectedModel);
 
         // Send files and model choice to Flask backend
