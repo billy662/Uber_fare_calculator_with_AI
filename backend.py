@@ -94,18 +94,24 @@ def generate(image_urls, selected_model="Model1"):
     
     # System instruction
     system_instruction = """
-I will provide screenshots of my Uber ride history in Hong Kong. I need you to extract the data from it summarizing the details of each trip and turn the data in JSON.
-The JSON should include the following columns and sort by time, from earliest to latest(be aware of AM/PM and 上午/下午), and exclude rides that are canceled. If there is any duplicate rides in different images, show only once in the output:
-*Time of the ride: Please be aware that the times are shown in a 12-hour format in the images. '上午' indicates AM (morning) and '下午' indicates PM (afternoon).  Output the time in 24-hour format . For example, '上午 9:26' is 09:26 and '下午11:56' is 23:56.  Pay close attention to these AM/PM indicators.
-*Duration (minutes): Numeric value (e.g., 20.43).
-*Distance (km):
-*Surge (HK$): Amount of 加乘費用 or blank if none. Do not treat 通行費 as 加乘費用.
-*Waiting Fee?:  If, within the ride details, there is a visual indicator consisting of a small, green colored box containing an upward pointing arrow icon, and the text "已增加" displayed alongside or within that box, then output "X". Otherwise, leave the output blank. 
-*Tip: If within the ride details, there is a text "貼士", the amount next to it represents the tip. If the trip includes tip, output the amount of the tip, otherwise leave the output blank.
-*Price (HK$): 
-*Type of ride: Usually "的士(預定價錢)", "咪錶的士" , "咪錶的士(乘客八五折)", "UberX", "Uber Pet", "Comfort", "UberXL", "UberXXL" or "Black"
-Please make sure this output is super accurate.
-Please ensure the JSON accurately reflects the information in the screenshot. Show the JSON only.
+I will provide screenshots of my Uber ride history in Hong Kong. I need you to extract the data from these screenshots, summarizing the details of each trip, and return the data in JSON format. Do not include any text in your reply other than the JSON. All extracted numeric values should be rounded to two decimal places.
+
+The JSON output should be an array of objects, where each object represents a single ride. Please sort the rides by their start time, from earliest to latest. Be mindful of '上午' (AM) and '下午' (PM) indicators for correct chronological sorting before converting to 24-hour format.
+
+Exclude any rides that were cancelled (e.g., those showing "顧客取消了訂單" or having a price of HK$0.00 due to cancellation). If duplicate ride entries are found across multiple images (based on time, price, and type), please ensure each unique ride appears only once in the final JSON output.
+
+For each ride, extract the following fields, the JSON should use the exact field names provided:
+
+* Time: This is the start time of the ride. The times in the images are in 12-hour format. '上午' denotes AM, and '下午' denotes PM. Convert this to a 24-hour format string (e.g., '上午 9:26' becomes "09:26", '下午 1:45' becomes "13:45", and '下午 11:35' becomes "23:35").
+* Duration: Extract the ride duration. This is often shown as "X 分鐘 Y 秒" (X minutes Y seconds) or "X 分鐘" (X minutes). Convert this into a single numeric value representing total minutes. For example, "17 分鐘 27 秒" should be calculated as 17 + (27/60) = 17.45. If only minutes are shown, use that value. The result should be a numeric value (e.g., 20.43).
+* Distance: Extract the distance of the ride in kilometers. This should be a numeric value (e.g., 5.72).
+* Surge: Identify any surge pricing. This is usually indicated by text like "加乘費用" or "加乘計費" followed by an amount (e.g., "HK$4.44 加乘計費"). Extract only the numeric amount of the surge. If no surge is indicated, this field should be an empty string "". Do not confuse "通行費" (tolls) with surge pricing.
+* Waiting Fee?: Check for a waiting fee indicator. If you see a small, green-colored box with an upward-pointing arrow icon and the text "已增加" near the ride details, set this field to "X". Otherwise, it should be an empty string "".
+* Tip: Look for text explicitly stating "貼士" (Tip). If present, extract the numeric amount of the tip that is in front this text. If no tip is mentioned, this field should be an empty string "".
+* Price: This is the final price of the ride displayed prominently (e.g., HK$101.25). Extract this as a numeric value.
+* Type: Extract the type of ride. This will typically be text such as "的士(預定價錢)", "咪錶的士", "咪錶的士(乘客八五折)", "UberX", "Uber Pet", "Comfort", "UberXL", "UberXXL", or "Black". Capture the full text as shown for the ride type.
+
+Please ensure the highest level of accuracy in extracting and formatting this information according to the specifications above.
 """
     
     try:
@@ -134,14 +140,14 @@ Please ensure the JSON accurately reflects the information in the screenshot. Sh
         result = []
         for ride in rides:
             formatted_ride = {
-                "Time of the ride": ride.time,
-                "Duration (minutes)": ride.duration_minutes,
-                "Distance (km)": ride.distance_km,
-                "Surge (HK$)": str(ride.surge_hkd) if ride.surge_hkd is not None else "",
+                "Time": ride.time,
+                "Duration": ride.duration_minutes,
+                "Distance": ride.distance_km,
+                "Surge": str(ride.surge_hkd) if ride.surge_hkd is not None else "",
                 "Waiting Fee?": ride.waiting_fee if ride.waiting_fee else "",
                 "Tip": str(ride.tip) if ride.tip is not None else "",
-                "Price (HK$)": ride.price_hkd,
-                "Type of ride": ride.type_of_ride
+                "Price": ride.price_hkd,
+                "Type": ride.type_of_ride
             }
             result.append(formatted_ride)
         

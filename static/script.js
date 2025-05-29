@@ -237,68 +237,68 @@ function setupDeveloperMode() {
             const sampleData = [
                 {
                 "Airport trip?": "normal",
-                "Distance (km)": 2.09,
-                "Duration (minutes)": 7.97,
-                "Price (HK$)": 50.12,
-                "Surge (HK$)": "",
-                "Time of the ride": "17:37",
+                "Distance": 2.09,
+                "Duration": 7.97,
+                "Price": 50.12,
+                "Surge": "",
+                "Time": "17:37",
                 "Tip": "",
-                "Type of ride": "的士(預定價錢)",
+                "Type": "的士(預定價錢)",
                 "Waiting Fee?": ""
                 },
                 {
                 "Airport trip?": "normal",
-                "Distance (km)": 5.85,
-                "Duration (minutes)": 12.63,
-                "Price (HK$)": 111.78,
-                "Surge (HK$)": "10.28",
-                "Time of the ride": "17:50",
+                "Distance": 5.85,
+                "Duration": 12.63,
+                "Price": 111.78,
+                "Surge": "10.28",
+                "Time": "17:50",
                 "Tip": "10.0",
-                "Type of ride": "的士(預定價錢)",
+                "Type": "的士(預定價錢)",
                 "Waiting Fee?": ""
                 },
                 {
                 "Airport trip?": "normal",
-                "Distance (km)": 9.8,
-                "Duration (minutes)": 19.18,
-                "Price (HK$)": 90.55,
-                "Surge (HK$)": "",
-                "Time of the ride": "18:17",
+                "Distance": 9.8,
+                "Duration": 19.18,
+                "Price": 90.55,
+                "Surge": "",
+                "Time": "18:17",
                 "Tip": "",
-                "Type of ride": "的士(預定價錢)",
+                "Type": "的士(預定價錢)",
                 "Waiting Fee?": ""
                 },
                 {
                 "Airport trip?": "normal",
-                "Distance (km)": 15.61,
-                "Duration (minutes)": 33.5,
-                "Price (HK$)": 175.3,
-                "Surge (HK$)": "32.46",
-                "Time of the ride": "18:34",
+                "Distance": 15.61,
+                "Duration": 33.5,
+                "Price": 175.3,
+                "Surge": "32.46",
+                "Time": "18:34",
                 "Tip": "",
-                "Type of ride": "的士(預定價錢)",
+                "Type": "的士(預定價錢)",
                 "Waiting Fee?": ""
                 },
                 {
                 "Airport trip?": "normal",
-                "Distance (km)": 14.84,
-                "Duration (minutes)": 21.62,
-                "Price (HK$)": 123.06,
-                "Surge (HK$)": "",
-                "Time of the ride": "20:40",
+                "Distance": 14.84,
+                "Duration": 21.62,
+                "Price": 123.06,
+                "Surge": "",
+                "Time": "20:40",
                 "Tip": "",
-                "Type of ride": "的士(預定價錢)",
+                "Type": "的士(預定價錢)",
                 "Waiting Fee?": ""
                 },
                 {
                 "Airport trip?": "normal",
-                "Distance (km)": 11.5,
-                "Duration (minutes)": 17.85,
-                "Price (HK$)": 141.25,
-                "Surge (HK$)": "",
-                "Time of the ride": "21:18",
+                "Distance": 11.5,
+                "Duration": 17.85,
+                "Price": 141.25,
+                "Surge": "",
+                "Time": "21:18",
                 "Tip": "",
-                "Type of ride": "的士(預定價錢)",
+                "Type": "的士(預定價錢)",
                 "Waiting Fee?": ""
                 }
             ];
@@ -509,7 +509,7 @@ async function submitFiles() {
 
         // Get selected model name from toggle
         const modelToggle = document.getElementById('modelToggle');
-        const selectedModel = modelToggle.checked ? "gemini-2.5-pro-exp-03-25" : "gemini-2.5-flash-preview-04-17"; // Send actual model name
+        const selectedModel = modelToggle.checked ? "gemini-2.5-pro-exp-03-25" : "gemini-2.5-flash-preview-05-20"; // Send actual model name
         formData.append('modelChoice', selectedModel);
 
         // Send files and model choice to Flask backend
@@ -529,7 +529,7 @@ async function submitFiles() {
             throw new Error(data.error);
         }
         
-        console.log('Received data:', JSON.stringify(data, null, 2));
+        console.log('Received data:\n', JSON.stringify(data, null, 2));
         displayResults(data);
         
     } catch (error) {
@@ -588,12 +588,12 @@ function copyTableToClipboard() {
  * @returns {object} An object containing the created row element, the original price, and the calculated difference.
  */
 function createResultRow(item) {
-    const duration = item['Duration (minutes)'];
-    const distance = item['Distance (km)'];
-    const surge = item['Surge (HK$)'];
+    const duration = item['Duration'];
+    const distance = item['Distance'];
+    const surge = item['Surge'];
     const tip = item['Tip'];
-    const price = item['Price (HK$)'];
-    const rideType = item['Type of ride'];
+    const price = item['Price'];
+    const rideType = item['Type'];
 
     const row = document.createElement('tr');
     
@@ -605,7 +605,7 @@ function createResultRow(item) {
     }
 
     row.innerHTML = `
-        <td>${item['Time of the ride']}</td>
+        <td>${item['Time']}</td>
         <td>${rideType}</td>
         <td>${duration}</td>
         <td>${distance}</td>
@@ -646,8 +646,8 @@ function displayResults(data) {
 
     // Sort data by Time of the ride
     data.sort((a, b) => {
-        const timeA = convertTimeToMinutes(a['Time of the ride']);
-        const timeB = convertTimeToMinutes(b['Time of the ride']);
+        const timeA = convertTimeToMinutes(a['Time']);
+        const timeB = convertTimeToMinutes(b['Time']);
         return timeA - timeB;
     });
 
